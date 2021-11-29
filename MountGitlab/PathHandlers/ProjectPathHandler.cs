@@ -42,7 +42,7 @@ public class ProjectPathHandler : PathHandler
         var rawProject = response?.FirstOrDefault();
         if (rawProject == null)
         {
-            project = default;
+            project = default!;
             return false;
         }
 

@@ -9,18 +9,16 @@ public class Cache
         _objects[item.FullPath] = item;
     }
 
-    public IEnumerable<string> AllKeys => _objects.Keys;
-
     public bool TryGetItem(string path, out GitlabObject cachedItem)
     {
-        return _objects.TryGetValue(path, out cachedItem);
+        return _objects.TryGetValue(path, out cachedItem!);
     }
 
     public bool TryGetItem<T>(string path, out T cachedItem) where T : GitlabObject
     {
-        if (TryGetItem(path, out var cachedGitObject) && cachedGitObject is T)
+        if (TryGetItem(path, out var cachedGitObject) && cachedGitObject is T cachedTypedObject)
         {
-            cachedItem = (T)cachedGitObject;
+            cachedItem = cachedTypedObject;
             return true;
         }
 
