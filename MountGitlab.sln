@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MountGitlab", "MountGitlab\MountGitlab.csproj", "{565E260D-3280-4F30-94F4-DD0023783E1C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFiles", "SolutionFiles", "{ED93657F-3963-4A60-A5EB-9156ACCFC8BB}"
+	ProjectSection(SolutionItems) = preProject
+		testenv.ps1 = testenv.ps1
+		.gitignore = .gitignore
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{565E260D-3280-4F30-94F4-DD0023783E1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{565E260D-3280-4F30-94F4-DD0023783E1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{565E260D-3280-4F30-94F4-DD0023783E1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{565E260D-3280-4F30-94F4-DD0023783E1C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
