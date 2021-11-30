@@ -30,6 +30,15 @@ public static class PathHandlerContextExtensions
         string commandName,
         params string[] args) where T : GitlabObject
     {
+        return context.GetGitlabObjects(create, _ => true, commandName, args);
+    }
+
+    public static IEnumerable<T> GetGitlabObjects<T>(this IPathHandlerContext context,
+        Func<PSObject, T> create,
+        Func<T, bool> validate,
+        string commandName,
+        params string[] args) where T : GitlabObject
+    {
         Collection<PSObject>? response = default;
         try
         {
@@ -51,9 +60,12 @@ public static class PathHandlerContextExtensions
             foreach (var item in response)
             {
                 var gitlabObject = create(item);
-                context.Cache.SetItem(gitlabObject);
+                if (validate(gitlabObject))
+                {
+                    context.Cache.SetItem(gitlabObject);
 
-                yield return gitlabObject;
+                    yield return gitlabObject;
+                }
             }
         }
     }

@@ -40,14 +40,10 @@ public class PipelinePathHandler : PathHandler
     private GitlabPipeline? GetPipeline()
     {
         var pipeline = Context.GetGitlabObjects(p => new GitlabPipeline(ParentPath, p),
+            p => _parentHandler.BranchName == null || p.Ref == _parentHandler.BranchName,
             "Get-GitlabPipeline",
             "-ProjectId", _parentHandler.ProjectPath,
             "-PipelineId", ItemName).FirstOrDefault();
-
-        if (pipeline != null && _parentHandler.BranchName != null && pipeline.Ref != _parentHandler.BranchName)
-        {
-            return null;
-        }
 
         return pipeline;
     }
