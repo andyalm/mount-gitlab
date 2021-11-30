@@ -32,6 +32,16 @@ public class GroupOrProjectPathHandler : PathHandler
 
     public override IEnumerable<GitlabObject> GetChildItems(bool recurse)
     {
-        return _groupHandler.GetChildItems(recurse).Concat(_projectHandler.GetChildItems(recurse));
+        if (_groupHandler.Exists())
+        {
+            return _groupHandler.GetChildItems(recurse);
+        }
+
+        if (_projectHandler.Exists())
+        {
+            return _projectHandler.GetChildItems(recurse);
+        }
+        
+        return Enumerable.Empty<GitlabObject>();
     }
 }
