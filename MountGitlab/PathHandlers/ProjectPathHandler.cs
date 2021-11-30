@@ -10,43 +10,19 @@ public class ProjectPathHandler : PathHandler
     {
     }
 
-    public override bool Exists()
+    protected override bool ExistsImpl()
     {
-        return TryGetProject(out _);
+        return GetItemImpl() != null;
     }
 
-    public override GitlabObject GetItem()
+    protected override GitlabObject? GetItemImpl()
     {
-        if (TryGetProject(out var project))
-        {
-            return project;
-        }
-
-        throw new InvalidOperationException($"Project at path {Path} does not exist");
+        return Context.GetProjects("-ProjectId", Path).FirstOrDefault();
     }
 
     public override IEnumerable<GitlabObject> GetChildItems(bool recurse)
     {
         yield return new ProjectSection(Path, "branches");
         yield return new ProjectSection(Path, "pipelines");
-    }
-    
-    public bool TryGetProject(out GitlabProject project)
-    {
-        if (Cache.TryGetItem(Path, out GitlabProject cachedProject))
-        {
-            project = cachedProject;
-            return true;
-        }
-
-        var projects = Context.GetProjects("-ProjectId", Path);
-        if (projects.Any())
-        {
-            project = projects.First();
-            return true;
-        }
-        
-        project = default!;
-        return false;
     }
 }

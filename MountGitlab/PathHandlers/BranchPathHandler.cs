@@ -10,20 +10,15 @@ public class BranchPathHandler : PathHandler
     }
 
     public string ProjectPath => System.IO.Path.GetDirectoryName(ParentPath)!.Replace(@"\", "/");
-    
-    public override bool Exists()
-    {
-        if (Cache.TryGetItem(Path, out _))
-        {
-            return true;
-        }
 
+    protected override bool ExistsImpl()
+    {
         return GetBranch() != null;
     }
 
-    public override GitlabObject GetItem()
+    protected override GitlabObject? GetItemImpl()
     {
-        return GetBranch()!;
+        return GetBranch();
     }
 
     public override IEnumerable<GitlabObject> GetChildItems(bool recurse)

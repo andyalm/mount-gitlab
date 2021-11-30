@@ -20,7 +20,27 @@ public abstract class PathHandler : IPathHandler
     protected string ParentPath => System.IO.Path.GetDirectoryName(Path)!.Replace(@"\", "/");
     protected string ItemName => System.IO.Path.GetFileName(Path);
 
-    public abstract bool Exists();
-    public abstract GitlabObject GetItem();
+    public bool Exists()
+    {
+        if (Cache.TryGetItem(Path, out _))
+        {
+            return true;
+        }
+
+        return ExistsImpl();
+    }
+
+    public GitlabObject GetItem()
+    {
+        if (Cache.TryGetItem(Path, out var cachedItem))
+        {
+            return cachedItem;
+        }
+
+        return GetItemImpl()!;
+    }
+
+    protected abstract bool ExistsImpl();
+    protected abstract GitlabObject? GetItemImpl();
     public abstract IEnumerable<GitlabObject> GetChildItems(bool recurse);
 }

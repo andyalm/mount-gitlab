@@ -18,14 +18,14 @@ public class PipelinesPathHandler : PathHandler
 
     public string ProjectPath => BranchPipelineMatch.Success ? BranchPipelineMatch.Groups["ProjectPath"].Value : ParentPath;
 
-    public override bool Exists()
+    protected override bool ExistsImpl()
     {
         return BranchPipelineMatch.Success
             ? new BranchPathHandler(ParentPath, Context).Exists()
             : new ProjectPathHandler(ProjectPath, Context).Exists();
     }
 
-    public override GitlabObject GetItem()
+    protected override GitlabObject GetItemImpl()
     {
         return BranchPipelineMatch.Success ?
             new RefSection(ProjectPath, BranchName!, "pipelines") :

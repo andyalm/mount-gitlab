@@ -11,45 +11,27 @@ public class GroupOrProjectPathHandler : PathHandler
         _projectHandler = new ProjectPathHandler(path, context);
     }
 
-    public override bool Exists()
+    protected override bool ExistsImpl()
     {
-        return TryGetObject(out _);
+        return GetItemImpl() != null;
     }
 
-    public override GitlabObject GetItem()
+    protected override GitlabObject? GetItemImpl()
     {
-        if (TryGetObject(out var gitlabObject))
+        if (_groupHandler.Exists())
         {
-            return gitlabObject;
+            return _groupHandler.GetItem();
         }
-        else
+        if(_projectHandler.Exists())
         {
-            throw new ArgumentException($"No group or project is accessible at {Path}");
+            return _projectHandler.GetItem();
         }
+
+        return null;
     }
 
     public override IEnumerable<GitlabObject> GetChildItems(bool recurse)
     {
         return _groupHandler.GetChildItems(recurse).Concat(_projectHandler.GetChildItems(recurse));
     }
-
-    private bool TryGetObject(out GitlabObject gitlabObject)
-    {
-        if (_groupHandler.TryGetGroup(out var group))
-        {
-            gitlabObject = group;
-            return true;
-        }
-        WriteDebug($"GroupOrProjectHandler.TryGetProject({Path})");
-        if(_projectHandler.TryGetProject(out var project))
-        {
-            gitlabObject = project;
-            return true;
-        }
-
-        gitlabObject = default!;
-        return false;
-    }
-
-    
 }

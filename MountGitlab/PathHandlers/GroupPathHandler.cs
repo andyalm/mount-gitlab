@@ -10,19 +10,16 @@ public class GroupPathHandler : PathHandler
     {
     }
 
-    public override bool Exists()
+    protected override bool ExistsImpl()
     {
-        return TryGetGroup(out _);
+        return GetItemImpl() != null;
     }
 
-    public override GitlabObject GetItem()
+    protected override GitlabObject? GetItemImpl()
     {
-        if (TryGetGroup(out var group))
-        {
-            return group;
-        }
-
-        throw new InvalidOperationException($"Group at path {Path} does not exist");
+        return Context.GetGitlabObjects(g => new GitlabGroup(g),
+                "Get-GitlabGroup", "-GroupId", Path)
+            .FirstOrDefault();
     }
 
     public override IEnumerable<GitlabObject> GetChildItems(bool recurse)
@@ -30,38 +27,5 @@ public class GroupPathHandler : PathHandler
         return Context.GetGroups("-ParentGroupId", Path)
             .ToGitlabGroupOrProjects()
             .Concat(Context.GetProjects("-GroupId", Path).ToGitlabGroupOrProjects());
-    }
-    
-    public bool TryGetGroup(out GitlabGroup group)
-    {
-        if (Cache.TryGetItem(Path, out GitlabGroup cachedGroup))
-        {
-            group = cachedGroup;
-            return true;
-        }
-
-        Collection<PSObject>? response = null;
-        WriteDebug($"Get-GitlabGroup -GroupId {Path}");
-        try
-        {
-            response = InvokeCommand.InvokeScript($"Get-GitlabGroup -GroupId {Path}");
-        }
-        catch(CmdletInvocationException ex) when(ex.Message.Contains("404"))
-        {
-            WriteDebug(ex.ToString());
-        }
-        var rawGroup = response?.FirstOrDefault();
-        if (rawGroup == null)
-        {
-            group = default!;
-            return false;
-        }
-        
-        WriteDebug($"GitlabGroup.Count: {response?.Count}");
-
-        group = new GitlabGroup(rawGroup);
-        Cache.SetItem(group);
-
-        return true;
     }
 }

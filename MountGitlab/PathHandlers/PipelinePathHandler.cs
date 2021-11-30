@@ -12,13 +12,8 @@ public class PipelinePathHandler : PathHandler
         _parentHandler = new PipelinesPathHandler(ParentPath, Context);
     }
 
-    public override bool Exists()
+    protected override bool ExistsImpl()
     {
-        if (Cache.TryGetItem(Path, out _))
-        {
-            return true;
-        }
-        
         if (!_parentHandler.Exists())
         {
             return false;
@@ -27,9 +22,9 @@ public class PipelinePathHandler : PathHandler
         return GetPipeline() != null;
     }
 
-    public override GitlabObject GetItem()
+    protected override GitlabObject? GetItemImpl()
     {
-        return GetPipeline()!;
+        return GetPipeline();
     }
 
     public override IEnumerable<GitlabObject> GetChildItems(bool recurse)

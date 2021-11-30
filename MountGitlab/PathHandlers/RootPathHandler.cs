@@ -4,9 +4,9 @@ public class RootPathHandler : PathHandler
 {
     public RootPathHandler(string path, IPathHandlerContext context) : base(path, context) {}
 
-    public override bool Exists() => true;
+    protected override bool ExistsImpl() => true;
 
-    public override GitlabObject GetItem()
+    protected override GitlabObject GetItemImpl()
     {
         throw new NotImplementedException();
     }
