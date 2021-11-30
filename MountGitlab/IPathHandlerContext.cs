@@ -1,4 +1,5 @@
-﻿using System.Management.Automation;
+﻿using System.Collections.ObjectModel;
+using System.Management.Automation;
 using MountGitlab.Models;
 
 namespace MountGitlab;
@@ -16,36 +17,44 @@ public static class PathHandlerContextExtensions
 {
     public static IEnumerable<GitlabGroup> GetGroups(this IPathHandlerContext context, params string[] args)
     {
-        context.WriteDebug($"Get-GitlabGroup {string.Join(" ", args)}");
-        var response = context.InvokeCommand.InvokeScript($"Get-GitlabGroup {string.Join(" ", args)}");
-        if (response == null)
-        {
-            throw new InvalidOperationException("Unexpected response from Get-GitlabGroup");
-        }
-
-        foreach (var rawGroup in response)
-        {
-            var group = new GitlabGroup(rawGroup);
-            context.Cache.SetItem(group);
-
-            yield return group;
-        }
+        return context.GetGitlabObjects(g => new GitlabGroup(g), "Get-GitlabGroup", args);
     }
 
     public static IEnumerable<GitlabProject> GetProjects(this IPathHandlerContext context, params string[] args)
     {
-        context.WriteDebug($"Get-GitlabProject {string.Join(" ", args)}");
-        var response = context.InvokeCommand.InvokeScript($"Get-GitlabProject {string.Join(" ", args)}");
-        if (response == null)
-        {
-            throw new InvalidOperationException("Unexpected response from Get-GitlabProject");
-        }
-        foreach (var rawProject in response)
-        {
-            var project = new GitlabProject(rawProject);
-            context.Cache.SetItem(project);
+        return context.GetGitlabObjects(p => new GitlabProject(p), "Get-GitlabProject", args);
+    }
 
-            yield return project;
+    public static IEnumerable<T> GetGitlabObjects<T>(this IPathHandlerContext context,
+        Func<PSObject, T> create,
+        string commandName,
+        params string[] args) where T : GitlabObject
+    {
+        Collection<PSObject>? response = default;
+        try
+        {
+            var fullCommand = $"{commandName} {string.Join(" ", args)}";
+            context.WriteDebug(fullCommand);
+            response = context.InvokeCommand.InvokeScript(fullCommand);
+        }
+        catch (CmdletInvocationException ex) when (ex.Message.Contains("404"))
+        {
+            yield break;
+        }
+        catch (Exception ex)
+        {
+            context.WriteDebug(ex.ToString());
+        }
+
+        if (response != null)
+        {
+            foreach (var item in response)
+            {
+                var gitlabObject = create(item);
+                context.Cache.SetItem(gitlabObject);
+
+                yield return gitlabObject;
+            }
         }
     }
 }

@@ -13,7 +13,7 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
     protected override string MakePath(string parent, string child)
     {
         var returnValue = base.MakePath(parent, child);
-        //WriteDebug($"{returnValue} MakePath({parent},{child})");
+        WriteDebug($"{returnValue} MakePath({parent},{child})");
 
         return returnValue;
     }
@@ -21,7 +21,7 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
     protected override string GetParentPath(string path, string root)
     {
         var returnValue = base.GetParentPath(path, root);
-        //WriteDebug($"{returnValue} GetParentPath({path}, {root})");
+        WriteDebug($"{returnValue} GetParentPath({path}, {root})");
 
         return returnValue;
     }
@@ -40,8 +40,11 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
 
     protected override bool ItemExists(string path)
     {
-        WriteDebug($"ItemExists({path})");
-        return GetPathHandler(path).Exists();
+        var handler = GetPathHandler(path);
+        var returnValue = handler.Exists();
+        WriteDebug($"{returnValue} {handler.GetType().Name}.ItemExists({handler.Path})");
+
+        return returnValue;
     }
     
     protected override void GetItem(string path)
@@ -94,30 +97,64 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
     private void WriteGitlabObject<T>(T gitlabObject) where T : GitlabObject
     {
         WriteDebug($"WriteItemObject<{gitlabObject.UnderlyingObject.TypeNames.First()}>(,{gitlabObject.FullPath},{gitlabObject.IsContainer})");
-        WriteItemObject(gitlabObject.UnderlyingObject, gitlabObject.FullPath, gitlabObject.IsContainer);
+        var providerPath =
+            $"{Path.DirectorySeparatorChar}{gitlabObject.FullPath.Replace("/", System.IO.Path.DirectorySeparatorChar.ToString())}";
+        WriteItemObject(gitlabObject.UnderlyingObject, providerPath, gitlabObject.IsContainer);
     }
 
     private IPathHandler GetPathHandler(string path)
     {
-        path = ToNormalizedGitlabPath(path);
-        if (string.IsNullOrEmpty(path))
+        try
         {
-            return new RootPathHandler(path, this);
-        }
-
-        if(_cache.TryGetItem(path, out var cachedObject))
-        {
-            return cachedObject switch
+            path = ToNormalizedGitlabPath(path);
+            if (path.StartsWith("/"))
             {
-                GitlabProject => new ProjectPathHandler(path, this),
-                GitlabGroup => new GroupPathHandler(path, this),
-                _ => throw new ArgumentOutOfRangeException(nameof(cachedObject))
-            };
+                throw new InvalidOperationException($"Path '{path}' is invalid. It should not start with a /");
+            }
+
+            if (string.IsNullOrEmpty(path))
+            {
+                return new RootPathHandler(path, this);
+            }
+
+            if (_cache.TryGetItem(path, out var cachedObject))
+            {
+                return cachedObject switch
+                {
+                    GitlabProject => new ProjectPathHandler(path, this),
+                    GitlabGroup => new GroupPathHandler(path, this),
+                    ProjectSection projectSection => GetProjectSectionHandler(projectSection, path),
+                    Branch => new BranchPathHandler(path, this)
+                    //_ => throw new ArgumentOutOfRangeException(nameof(cachedObject))
+                };
+            }
+
+            if (path.EndsWith("branches"))
+            {
+                return new BranchesPathHandler(path, this);
+            }
+
+            if (BranchPathHandler.Matches(path))
+            {
+                return new BranchPathHandler(path, this);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            return new GroupOrProjectPathHandler(path, this);
+            WriteDebug(ex.ToString());
         }
+        
+        return new GroupOrProjectPathHandler(path, this);
+    }
+
+    private IPathHandler GetProjectSectionHandler(ProjectSection projectSection, string path)
+    {
+        return projectSection.Name switch
+        {
+            "branches" => new BranchesPathHandler(path, this),
+            _ => throw new ArgumentOutOfRangeException(
+                $"ProjectSection '{projectSection.Name}' not currently supported")
+        };
     }
 
     private string ToNormalizedGitlabPath(string path)

@@ -40,7 +40,7 @@ public class GroupOrProjectPathHandler : PathHandler
             gitlabObject = group;
             return true;
         }
-        
+        WriteDebug($"GroupOrProjectHandler.TryGetProject({Path})");
         if(_projectHandler.TryGetProject(out var project))
         {
             gitlabObject = project;

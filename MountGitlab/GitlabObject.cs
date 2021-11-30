@@ -4,6 +4,12 @@ namespace MountGitlab;
 
 public abstract class GitlabObject
 {
+    protected GitlabObject(string typeName, object obj)
+    {
+        UnderlyingObject = new PSObject(obj);
+        UnderlyingObject.TypeNames.Add(typeName);
+    }
+    
     protected GitlabObject(PSObject underlyingObject)
     {
         UnderlyingObject = underlyingObject;

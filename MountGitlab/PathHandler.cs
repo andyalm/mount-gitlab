@@ -10,12 +10,15 @@ public abstract class PathHandler : IPathHandler
         Context = context;
     }
     
-    protected string Path { get; }
+    public string Path { get; }
     protected IPathHandlerContext Context { get; }
 
     protected Cache Cache => Context.Cache;
     protected CommandInvocationIntrinsics InvokeCommand => Context.InvokeCommand;
     protected void WriteDebug(string message) => Context.WriteDebug(message);
+
+    protected string ParentPath => System.IO.Path.GetDirectoryName(Path)!.Replace(@"\", "/");
+    protected string ItemName => System.IO.Path.GetFileName(Path);
 
     public abstract bool Exists();
     public abstract GitlabObject GetItem();

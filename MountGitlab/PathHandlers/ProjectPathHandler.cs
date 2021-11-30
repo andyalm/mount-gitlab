@@ -1,4 +1,6 @@
-﻿using MountGitlab.Models;
+﻿using System.Collections.ObjectModel;
+using System.Management.Automation;
+using MountGitlab.Models;
 
 namespace MountGitlab.PathHandlers;
 
@@ -25,7 +27,7 @@ public class ProjectPathHandler : PathHandler
 
     public override IEnumerable<GitlabObject> GetChildItems(bool recurse)
     {
-        return Enumerable.Empty<GitlabObject>();
+        yield return new ProjectSection(Path, "branches");
     }
     
     public bool TryGetProject(out GitlabProject project)
@@ -37,7 +39,15 @@ public class ProjectPathHandler : PathHandler
         }
         
         WriteDebug($"Get-GitlabProject -ProjectId {Path}");
-        var response = InvokeCommand.InvokeScript($"Get-GitlabProject -ProjectId {Path}");
+        Collection<PSObject> response = default;
+        try
+        {
+            response = InvokeCommand.InvokeScript($"Get-GitlabProject -ProjectId {Path}");
+        }
+        catch (CmdletInvocationException ex) when (ex.Message.Contains("404"))
+        {
+            WriteDebug(ex.ToString());
+        }
 
         var rawProject = response?.FirstOrDefault();
         if (rawProject == null)

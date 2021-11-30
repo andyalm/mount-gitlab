@@ -1,4 +1,6 @@
-﻿using MountGitlab.Models;
+﻿using System.Collections.ObjectModel;
+using System.Management.Automation;
+using MountGitlab.Models;
 
 namespace MountGitlab.PathHandlers;
 
@@ -37,16 +39,25 @@ public class GroupPathHandler : PathHandler
             group = cachedGroup;
             return true;
         }
-        
-        WriteDebug($"Get-GitlabGroup -GroupId {Path}");
-        var response = InvokeCommand.InvokeScript($"Get-GitlabGroup -GroupId {Path}");
 
+        Collection<PSObject> response = null;
+        WriteDebug($"Get-GitlabGroup -GroupId {Path}");
+        try
+        {
+            response = InvokeCommand.InvokeScript($"Get-GitlabGroup -GroupId {Path}");
+        }
+        catch(CmdletInvocationException ex) when(ex.Message.Contains("404"))
+        {
+            WriteDebug(ex.ToString());
+        }
         var rawGroup = response?.FirstOrDefault();
         if (rawGroup == null)
         {
             group = default!;
             return false;
         }
+        
+        WriteDebug($"GitlabGroup.Count: {response?.Count}");
 
         group = new GitlabGroup(rawGroup);
         Cache.SetItem(group);
