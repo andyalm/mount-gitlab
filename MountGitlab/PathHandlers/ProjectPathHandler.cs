@@ -23,6 +23,7 @@ public class ProjectPathHandler : PathHandler
     public override IEnumerable<GitlabObject> GetChildItems(bool recurse)
     {
         yield return new ProjectSection(Path, "branches");
+        yield return new ProjectSection(Path, "merge-requests");
         yield return new ProjectSection(Path, "pipelines");
     }
 }

@@ -9,7 +9,7 @@ public class BranchPathHandler : PathHandler
     {
     }
 
-    public string ProjectPath => System.IO.Path.GetDirectoryName(ParentPath)!.Replace(@"\", "/");
+    public string ProjectPath => GitlabPath.GetParent(ParentPath);
 
     protected override bool ExistsImpl()
     {

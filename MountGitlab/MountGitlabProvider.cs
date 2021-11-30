@@ -1,4 +1,5 @@
-﻿using System.Management.Automation.Provider;
+﻿using System.Management.Automation;
+using System.Management.Automation.Provider;
 using MountGitlab.Models;
 using MountGitlab.PathHandlers;
 
@@ -56,13 +57,13 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
     protected override bool HasChildItems(string path)
     {
         WriteDebug($"HasChildItems({path})");
-        return base.HasChildItems(path);
+        return GetPathHandler(path).GetChildItems(false).Any();
     }
 
     protected override bool IsItemContainer(string path)
     {
         WriteDebug($"IsItemContainer({path})");
-        return true;
+        return GetPathHandler(path).GetItem().IsContainer;
     }
 
     protected override string NormalizeRelativePath(string path, string basePath)
@@ -82,8 +83,14 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
     protected override void GetChildItems(string path, bool recurse)
     {
         WriteDebug($"GetChildItems({path}, {recurse})");
-
-        WriteGitlabObjects(GetPathHandler(path).GetChildItems(recurse));
+        try
+        {
+            WriteGitlabObjects(GetPathHandler(path).GetChildItems(recurse));
+        }
+        catch (Exception ex)
+        {
+            WriteDebug(ex.ToString());
+        }
     }
 
     private void WriteGitlabObjects<T>(IEnumerable<T> gitlabObjects) where T : GitlabObject
@@ -122,16 +129,26 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
                 return new BranchesPathHandler(path, this);
             }
 
+            if (path.EndsWith("merge-requests"))
+            {
+                return new MergeRequestsPathHandler(path, this);
+            }
+
             if (path.EndsWith("pipelines"))
             {
                 return new PipelinesPathHandler(path, this);
+            }
+
+            if (MergeRequestPathHandler.Matches(path))
+            {
+                return new MergeRequestPathHandler(path, this);
             }
 
             if (PipelinePathHandler.Matches(path))
             {
                 return new PipelinePathHandler(path, this);
             }
-
+            
             if (BranchPathHandler.Matches(path))
             {
                 return new BranchPathHandler(path, this);
