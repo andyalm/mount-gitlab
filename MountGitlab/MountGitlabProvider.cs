@@ -13,7 +13,7 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
     protected override string MakePath(string parent, string child)
     {
         var returnValue = base.MakePath(parent, child);
-        WriteDebug($"{returnValue} MakePath({parent},{child})");
+        //WriteDebug($"{returnValue} MakePath({parent},{child})");
 
         return returnValue;
     }
@@ -21,7 +21,7 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
     protected override string GetParentPath(string path, string root)
     {
         var returnValue = base.GetParentPath(path, root);
-        WriteDebug($"{returnValue} GetParentPath({path}, {root})");
+        //WriteDebug($"{returnValue} GetParentPath({path}, {root})");
 
         return returnValue;
     }
@@ -117,20 +117,6 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
                 return new RootPathHandler(path, this);
             }
 
-            if (_cache.TryGetItem(path, out var cachedObject))
-            {
-                return cachedObject switch
-                {
-                    GitlabProject => new ProjectPathHandler(path, this),
-                    GitlabGroup => new GroupPathHandler(path, this),
-                    ProjectSection projectSection => GetProjectSectionHandler(projectSection, path),
-                    GitlabBranch => new BranchPathHandler(path, this),
-                    GitlabPipeline => new PipelinePathHandler(path, this),
-                    RefSection refSection => GetRefSectionHandler(refSection, path),
-                    _ => throw new ArgumentOutOfRangeException(nameof(cachedObject))
-                };
-            }
-
             if (path.EndsWith("branches"))
             {
                 return new BranchesPathHandler(path, this);
@@ -159,25 +145,6 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
         return new GroupOrProjectPathHandler(path, this);
     }
 
-    private IPathHandler GetRefSectionHandler(RefSection refSection, string path)
-    {
-        return refSection.Name switch
-        {
-            "pipelines" => new PipelinesPathHandler(path, this),
-            _ => throw new ArgumentOutOfRangeException($"RefSection '{refSection.Name}' not currently supported")
-        };
-    }
-
-    private IPathHandler GetProjectSectionHandler(ProjectSection projectSection, string path)
-    {
-        return projectSection.Name switch
-        {
-            "branches" => new BranchesPathHandler(path, this),
-            _ => throw new ArgumentOutOfRangeException(
-                $"ProjectSection '{projectSection.Name}' not currently supported")
-        };
-    }
-
     private string ToNormalizedGitlabPath(string path)
     {
         var normalizedPath = path.Replace(@"\", "/");
@@ -185,9 +152,7 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
         {
             return normalizedPath.Substring(1);
         }
-        else
-        {
-            return normalizedPath;
-        }
+
+        return normalizedPath;
     }
 }
