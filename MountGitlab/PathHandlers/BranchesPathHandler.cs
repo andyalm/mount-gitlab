@@ -8,7 +8,7 @@ public class BranchesPathHandler : PathHandler
     {
     }
 
-    public override bool Exists() => true;
+    public override bool Exists() => new ProjectPathHandler(ParentPath, Context).Exists();
 
     public override GitlabObject GetItem()
     {
@@ -17,16 +17,9 @@ public class BranchesPathHandler : PathHandler
 
     public override IEnumerable<GitlabObject> GetChildItems(bool recurse)
     {
-        WriteDebug($"Get-GitlabBranch -Project {ParentPath}");
-        var response = InvokeCommand.InvokeScript($"Get-GitlabBranch -Project {ParentPath}");
-        if (response == null)
+        var branches = Context.GetGitlabObjects(b => new GitlabBranch(ParentPath, b), "Get-GitlabBranch", "-Project", ParentPath);
+        foreach (var branch in branches)
         {
-            throw new InvalidOperationException($"Unexpected response from Get-GitlabBranch");
-        }
-
-        foreach (var rawBranch in response)
-        {
-            var branch = new Branch(ParentPath, rawBranch);
             Cache.SetItem(branch);
 
             yield return branch;

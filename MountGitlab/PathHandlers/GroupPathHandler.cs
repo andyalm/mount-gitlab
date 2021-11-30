@@ -40,7 +40,7 @@ public class GroupPathHandler : PathHandler
             return true;
         }
 
-        Collection<PSObject> response = null;
+        Collection<PSObject>? response = null;
         WriteDebug($"Get-GitlabGroup -GroupId {Path}");
         try
         {

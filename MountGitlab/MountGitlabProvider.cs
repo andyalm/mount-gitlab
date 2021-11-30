@@ -124,14 +124,26 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
                     GitlabProject => new ProjectPathHandler(path, this),
                     GitlabGroup => new GroupPathHandler(path, this),
                     ProjectSection projectSection => GetProjectSectionHandler(projectSection, path),
-                    Branch => new BranchPathHandler(path, this)
-                    //_ => throw new ArgumentOutOfRangeException(nameof(cachedObject))
+                    GitlabBranch => new BranchPathHandler(path, this),
+                    GitlabPipeline => new PipelinePathHandler(path, this),
+                    RefSection refSection => GetRefSectionHandler(refSection, path),
+                    _ => throw new ArgumentOutOfRangeException(nameof(cachedObject))
                 };
             }
 
             if (path.EndsWith("branches"))
             {
                 return new BranchesPathHandler(path, this);
+            }
+
+            if (path.EndsWith("pipelines"))
+            {
+                return new PipelinesPathHandler(path, this);
+            }
+
+            if (PipelinePathHandler.Matches(path))
+            {
+                return new PipelinePathHandler(path, this);
             }
 
             if (BranchPathHandler.Matches(path))
@@ -145,6 +157,15 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
         }
         
         return new GroupOrProjectPathHandler(path, this);
+    }
+
+    private IPathHandler GetRefSectionHandler(RefSection refSection, string path)
+    {
+        return refSection.Name switch
+        {
+            "pipelines" => new PipelinesPathHandler(path, this),
+            _ => throw new ArgumentOutOfRangeException($"RefSection '{refSection.Name}' not currently supported")
+        };
     }
 
     private IPathHandler GetProjectSectionHandler(ProjectSection projectSection, string path)

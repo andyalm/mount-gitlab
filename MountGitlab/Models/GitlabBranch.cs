@@ -2,11 +2,11 @@
 
 namespace MountGitlab.Models;
 
-public class Branch : GitlabObject
+public class GitlabBranch : GitlabObject
 {
     public string ProjectPath { get; }
     
-    public Branch(string projectPath, PSObject underlyingObject) : base(underlyingObject)
+    public GitlabBranch(string projectPath, PSObject underlyingObject) : base(underlyingObject)
     {
         ProjectPath = projectPath;
     }

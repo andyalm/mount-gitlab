@@ -28,18 +28,23 @@ public class BranchPathHandler : PathHandler
 
     public override IEnumerable<GitlabObject> GetChildItems(bool recurse)
     {
-        return Enumerable.Empty<GitlabObject>();
+        yield return new RefSection(ProjectPath, ItemName, "pipelines");
     }
 
-    public Branch? GetBranch()
+    public GitlabBranch? GetBranch()
     {
-        return Context.GetGitlabObjects(b => new Branch(ProjectPath, b), "Get-GitlabBranch", "-Project", ProjectPath, "-Ref",
+        return Context.GetGitlabObjects(b => new GitlabBranch(ProjectPath, b), "Get-GitlabBranch", "-Project", ProjectPath, "-Ref",
             ItemName).FirstOrDefault();
     }
 
-    private static readonly Regex PathRegex = new(@"branches/[a-z0-9_\-]+$", RegexOptions.IgnoreCase);
+    private static readonly Regex PathRegex = BuildRegex("$");
     public static bool Matches(string path)
     {
         return PathRegex.IsMatch(path);
+    }
+
+    public static Regex BuildRegex(string suffix)
+    {
+        return new Regex(@$"^(?<ProjectPath>.+)/branches/(?<BranchName>[a-z0-9_\-]+){suffix}", RegexOptions.IgnoreCase);
     }
 }

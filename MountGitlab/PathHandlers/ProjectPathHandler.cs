@@ -28,6 +28,7 @@ public class ProjectPathHandler : PathHandler
     public override IEnumerable<GitlabObject> GetChildItems(bool recurse)
     {
         yield return new ProjectSection(Path, "branches");
+        yield return new ProjectSection(Path, "pipelines");
     }
     
     public bool TryGetProject(out GitlabProject project)
@@ -37,28 +38,15 @@ public class ProjectPathHandler : PathHandler
             project = cachedProject;
             return true;
         }
+
+        var projects = Context.GetProjects("-ProjectId", Path);
+        if (projects.Any())
+        {
+            project = projects.First();
+            return true;
+        }
         
-        WriteDebug($"Get-GitlabProject -ProjectId {Path}");
-        Collection<PSObject> response = default;
-        try
-        {
-            response = InvokeCommand.InvokeScript($"Get-GitlabProject -ProjectId {Path}");
-        }
-        catch (CmdletInvocationException ex) when (ex.Message.Contains("404"))
-        {
-            WriteDebug(ex.ToString());
-        }
-
-        var rawProject = response?.FirstOrDefault();
-        if (rawProject == null)
-        {
-            project = default!;
-            return false;
-        }
-
-        project = new GitlabProject(rawProject);
-        Cache.SetItem(project);
-
-        return true;
+        project = default!;
+        return false;
     }
 }

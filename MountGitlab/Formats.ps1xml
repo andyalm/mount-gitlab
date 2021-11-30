@@ -58,5 +58,36 @@
         </TableRowEntries>
       </TableControl>
     </View>
+    <View>
+      <Name>RefSection</Name>
+      <ViewSelectedBy>
+        <TypeName>MountGitlab.RefSection</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+          </TableColumnHeader>
+          <TableColumnHeader>
+          </TableColumnHeader>
+          <TableColumnHeader>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>Name</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>ProjectPath</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Ref</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
   </ViewDefinitions>
 </Configuration>
