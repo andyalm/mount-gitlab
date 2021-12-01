@@ -12,6 +12,10 @@ public class PipelinePathHandler : PathHandler
         _parentHandler = new PipelinesPathHandler(ParentPath, Context);
     }
 
+    public string ProjectPath => _parentHandler.ProjectPath;
+
+    public string PipelineId => ItemName;
+
     protected override bool ExistsImpl()
     {
         if (!_parentHandler.Exists())
@@ -29,7 +33,10 @@ public class PipelinePathHandler : PathHandler
 
     public override IEnumerable<GitlabObject> GetChildItems(bool recurse)
     {
-        return Enumerable.Empty<GitlabObject>();
+        return Context.GetGitlabObjects(j => new GitlabJob(Path, j),
+            "Get-GitlabJob",
+            "-ProjectId", _parentHandler.ProjectPath,
+            "-PipelineId", ItemName);
     }
 
     private GitlabPipeline? GetPipeline()

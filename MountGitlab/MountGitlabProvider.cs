@@ -149,6 +149,11 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
                 return new MergeRequestPathHandler(path, this);
             }
 
+            if (JobPathHandler.Matches(path))
+            {
+                return new JobPathHandler(path, this);
+            }
+
             if (PipelinePathHandler.Matches(path))
             {
                 return new PipelinePathHandler(path, this);
@@ -204,7 +209,7 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
         throw new InvalidOperationException("This item does not support reading content");
     }
 
-    public object GetContentReaderDynamicParameters(string path)
+    public object? GetContentReaderDynamicParameters(string path)
     {
         return null;
     }

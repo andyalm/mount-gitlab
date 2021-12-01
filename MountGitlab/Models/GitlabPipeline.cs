@@ -13,7 +13,7 @@ public class GitlabPipeline : GitlabObject
 
     public override string Name => Property<long>("Id").ToString();
     public override string FullPath => $"{ContainerPath}/{Name}";
-    public override bool IsContainer => false;
+    public override bool IsContainer => true;
 
     public string Ref => Property<string>("Ref");
 }
