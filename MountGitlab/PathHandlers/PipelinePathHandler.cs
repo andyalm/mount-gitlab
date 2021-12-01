@@ -19,7 +19,7 @@ public class PipelinePathHandler : PathHandler
             return false;
         }
 
-        return GetPipeline() != null;
+        return GetItem() != null;
     }
 
     protected override GitlabObject? GetItemImpl()

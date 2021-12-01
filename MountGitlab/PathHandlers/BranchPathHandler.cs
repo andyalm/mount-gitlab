@@ -13,7 +13,7 @@ public class BranchPathHandler : PathHandler
 
     protected override bool ExistsImpl()
     {
-        return GetBranch() != null;
+        return GetItem() != null;
     }
 
     protected override GitlabObject? GetItemImpl()
@@ -23,6 +23,7 @@ public class BranchPathHandler : PathHandler
 
     public override IEnumerable<GitlabObject> GetChildItems(bool recurse)
     {
+        yield return new RefSection(ProjectPath, ItemName, "files");
         yield return new RefSection(ProjectPath, ItemName, "pipelines");
     }
 

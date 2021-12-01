@@ -6,4 +6,9 @@ public static class GitlabPath
     {
         return Path.GetDirectoryName(path)!.Replace(@"\", "/");
     }
+
+    public static string Combine(params string[] parts)
+    {
+        return Path.Combine(parts).Replace(@"\", "/");
+    }
 }

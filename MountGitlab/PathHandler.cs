@@ -30,14 +30,21 @@ public abstract class PathHandler : IPathHandler
         return ExistsImpl();
     }
 
-    public GitlabObject GetItem()
+    public GitlabObject? GetItem()
     {
         if (Cache.TryGetItem(Path, out var cachedItem))
         {
             return cachedItem;
         }
 
-        return GetItemImpl()!;
+        var item = GetItemImpl();
+        if (item != null)
+        {
+            WriteDebug($"Cache.SetItem<{item.GetType().Name}>({item.FullPath})");
+            Cache.SetItem(item);
+        }
+
+        return item;
     }
 
     protected abstract bool ExistsImpl();

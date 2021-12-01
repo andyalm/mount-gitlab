@@ -23,7 +23,7 @@ public abstract class GitlabObject
     
     public abstract bool IsContainer { get; }
 
-    public T Property<T>(string propertyName)
+    protected T Property<T>(string propertyName)
     {
         return (T)UnderlyingObject.Properties[propertyName].Value;
     }

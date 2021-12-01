@@ -5,7 +5,7 @@ using MountGitlab.PathHandlers;
 
 namespace MountGitlab;
 [CmdletProvider("MountGitlab", ProviderCapabilities.Filter)]
-public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
+public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext, IContentCmdletProvider
 {
     private static readonly Cache _cache = new();
 
@@ -51,7 +51,11 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
     protected override void GetItem(string path)
     {
         WriteDebug($"GetItem({path})");
-        WriteGitlabObject(GetPathHandler(path).GetItem());
+        var item = GetPathHandler(path).GetItem();
+        if (item != null)
+        {
+            WriteGitlabObject(item);
+        }
     }
 
     protected override bool HasChildItems(string path)
@@ -63,7 +67,7 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
     protected override bool IsItemContainer(string path)
     {
         WriteDebug($"IsItemContainer({path})");
-        return GetPathHandler(path).GetItem().IsContainer;
+        return GetPathHandler(path).GetItem()?.IsContainer ?? false;
     }
 
     protected override string NormalizeRelativePath(string path, string basePath)
@@ -76,7 +80,6 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
 
     protected override void GetChildItems(string path, bool recurse, uint depth)
     {
-        WriteDebug($"GetChildItems({path}, {recurse}, {depth})");
         GetChildItems(path, recurse);
     }
 
@@ -85,7 +88,9 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
         WriteDebug($"GetChildItems({path}, {recurse})");
         try
         {
-            WriteGitlabObjects(GetPathHandler(path).GetChildItems(recurse));
+            var pathHandler = GetPathHandler(path);
+            WriteDebug($"{pathHandler.GetType().Name}.GetChildItems({path})");
+            WriteGitlabObjects(pathHandler.GetChildItems(recurse));
         }
         catch (Exception ex)
         {
@@ -153,6 +158,11 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
             {
                 return new BranchPathHandler(path, this);
             }
+
+            if (FilesPathHandler.Matches(path))
+            {
+                return new FilesPathHandler(path, this);
+            }
         }
         catch (Exception ex)
         {
@@ -171,5 +181,41 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
         }
 
         return normalizedPath;
+    }
+
+    public void ClearContent(string path)
+    {
+        throw new NotSupportedException();
+    }
+
+    public object ClearContentDynamicParameters(string path)
+    {
+        throw new NotSupportedException();
+    }
+
+    public IContentReader GetContentReader(string path)
+    {
+        var pathHandler = GetPathHandler(path);
+        if (pathHandler is ISupportContentReader contentReadHandler)
+        {
+            return contentReadHandler.GetContentReader();
+        }
+
+        throw new InvalidOperationException("This item does not support reading content");
+    }
+
+    public object GetContentReaderDynamicParameters(string path)
+    {
+        return null;
+    }
+
+    public IContentWriter GetContentWriter(string path)
+    {
+        throw new NotSupportedException();
+    }
+
+    public object GetContentWriterDynamicParameters(string path)
+    {
+        throw new NotSupportedException();
     }
 }

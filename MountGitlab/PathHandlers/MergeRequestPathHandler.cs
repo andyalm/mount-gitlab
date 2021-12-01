@@ -13,7 +13,7 @@ public class MergeRequestPathHandler : PathHandler
 
     protected override bool ExistsImpl()
     {
-        return GetMergeRequest() != null;
+        return GetItem() != null;
     }
 
     protected override GitlabObject? GetItemImpl()

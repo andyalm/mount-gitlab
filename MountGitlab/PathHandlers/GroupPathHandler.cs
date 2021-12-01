@@ -12,13 +12,12 @@ public class GroupPathHandler : PathHandler
 
     protected override bool ExistsImpl()
     {
-        return GetItemImpl() != null;
+        return GetItem() != null;
     }
 
     protected override GitlabObject? GetItemImpl()
     {
-        return Context.GetGitlabObjects(g => new GitlabGroup(g),
-                "Get-GitlabGroup", "-GroupId", Path)
+        return Context.GetGroups( "-GroupId", Path)
             .FirstOrDefault();
     }
 

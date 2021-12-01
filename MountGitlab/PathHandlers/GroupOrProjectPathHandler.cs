@@ -1,4 +1,6 @@
-﻿namespace MountGitlab.PathHandlers;
+﻿using MountGitlab.Models;
+
+namespace MountGitlab.PathHandlers;
 
 public class GroupOrProjectPathHandler : PathHandler
 {
@@ -32,16 +34,12 @@ public class GroupOrProjectPathHandler : PathHandler
 
     public override IEnumerable<GitlabObject> GetChildItems(bool recurse)
     {
-        if (_groupHandler.Exists())
+        var item = GetItem();
+        return item switch
         {
-            return _groupHandler.GetChildItems(recurse);
-        }
-
-        if (_projectHandler.Exists())
-        {
-            return _projectHandler.GetChildItems(recurse);
-        }
-        
-        return Enumerable.Empty<GitlabObject>();
+            GitlabProject => _projectHandler.GetChildItems(recurse),
+            GitlabGroup => _groupHandler.GetChildItems(recurse),
+            _ => Enumerable.Empty<GitlabObject>()
+        };
     }
 }
