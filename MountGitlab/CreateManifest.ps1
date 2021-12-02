@@ -19,6 +19,7 @@ New-ModuleManifest -Path $(Join-Path $Directory MountGitlab.psd1) `
     -Description 'An experimental powershell provider that allows you to explore gitlab as a filesystem.' `
     -PowerShellVersion '7.2' `
     -FormatsToProcess @('Formats.ps1xml') `
+    -RequiredModules @('GitlabCli') `
     -FunctionsToExport @() `
     -VariablesToExport @() `
     -CmdletsToExport @() `
