@@ -16,12 +16,12 @@
     </Content>
   </ItemGroup>
   
-  <Target Name="CopyModuleToOutput" AfterTargets="Build" Condition="$(Configuration)=='Release'">
+  <Target Name="CopyModuleToOutput" AfterTargets="Build">
+    <Exec Command="pwsh CreateManifest.ps1 &quot;$(OutputPath)&quot;" WorkingDirectory="$(MSBuildProjectDirectory)" />
     <ItemGroup>
       <ModuleFile Include="$(OutputPath)\*.*" />
     </ItemGroup>
-    <Copy SourceFiles="@(ModuleFile)" DestinationFolder="..\bin\MountGitlab" />
-    <Exec Command="pwsh CreateManifest.ps1" WorkingDirectory="$(MSBuildProjectDirectory)" />
+    <Copy SourceFiles="@(ModuleFile)" DestinationFolder="..\bin\MountGitlab" Condition="$(Configuration)=='Release'" />
   </Target>
 
 </Project>

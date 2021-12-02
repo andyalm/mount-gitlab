@@ -17,9 +17,10 @@ Install-Module -Name MountGitlab
 
 2. Configure your gitlab connection by following the `GitlabCli` [instructions here](https://github.com/chris-peterson/pwsh-gitlab#configuration).
 
-3. Finally, mount gitlab to a PSDrive with something like this (consider adding this to your profile):
+3. Finally, import the module and mount gitlab to a PSDrive with something like this (consider adding this to your profile):
 
 ```powershell
+Import-Module MountGitlab
 New-PSDrive -Name gitlab -PSProvider MountGitlab -Root /
 ```
 ## Usage
@@ -29,33 +30,33 @@ New-PSDrive -Name gitlab -PSProvider MountGitlab -Root /
 cd gitlab:
 
 # list all gitlab groups in the project
-ls
+dir
 
 # list all of the projects and subgroups within a group
 cd mygroup
-ls
+dir
 
 # list top level files and directories within the default branch of the project
 cd myproject
-ls files
+dir files
 
 # list the branches in the project
-ls branches
+dir branches
 
 # list the pipelines in the project
-ls pipelines
+dir pipelines
 
 # navigate into the main branch
 cd branches/mybranch
 
 # list the pipelines associated with the current branch
-ls pipelines
+dir pipelines
 
 # list the top level files and directories within the current branch
-ls files
+dir files
 
 # list the jobs within a pipeline
-ls pipelines/12345
+dir pipelines/12345
 
 # print out the job trace for a specific job
 cat pipelines/12345/build

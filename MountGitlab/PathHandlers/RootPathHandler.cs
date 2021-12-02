@@ -1,4 +1,6 @@
-﻿namespace MountGitlab.PathHandlers;
+﻿using MountGitlab.Models;
+
+namespace MountGitlab.PathHandlers;
 
 public class RootPathHandler : PathHandler
 {
@@ -8,7 +10,7 @@ public class RootPathHandler : PathHandler
 
     protected override GitlabObject GetItemImpl()
     {
-        throw new NotImplementedException();
+        return new GitlabRoot();
     }
 
     public override IEnumerable<GitlabObject> GetChildItems(bool recurse)
