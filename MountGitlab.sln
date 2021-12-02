@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFiles", "SolutionFi
 		testenv.ps1 = testenv.ps1
 		.gitignore = .gitignore
 		README.md = README.md
+		publish.ps1 = publish.ps1
 	EndProjectSection
 EndProject
 Global
