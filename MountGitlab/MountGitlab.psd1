@@ -30,7 +30,7 @@ CompanyName = ''
 Copyright = '(c) 2021 Andy Alm. All rights reserved.'
 
 # Description of the functionality provided by this module
-# Description = ''
+Description = 'An experimental powershell provider that allows you to explore gitlab as a filesystem.'
 
 # Minimum version of the PowerShell engine required by this module
 PowerShellVersion = '7.2'

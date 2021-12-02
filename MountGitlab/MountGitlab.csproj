@@ -18,5 +18,13 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  
+  <Target Name="CopyModuleToOutput" AfterTargets="Build">
+    <Message Text="Hello AfterBuild" Importance="high" />
+    <ItemGroup>
+      <ModuleFile Include="$(OutputPath)\*.*"/>
+    </ItemGroup>
+    <Copy SourceFiles="@(ModuleFile)" DestinationFolder="..\bin\MountGitlab" />
+  </Target>
 
 </Project>
