@@ -42,7 +42,7 @@ public class FilesPathHandler : PathHandler, ISupportContentReader
 
     protected override bool ExistsImpl()
     {
-        if (!new ProjectPathHandler(ProjectPath, Context).Exists())
+        if (new GroupOrProjectPathHandler(ProjectPath, Context).GetProject() == null)
         {
             WriteDebug($"FilesPathHandler: Project {ProjectPath} does not exist");
             return false;
@@ -89,7 +89,7 @@ public class FilesPathHandler : PathHandler, ISupportContentReader
         return null;
     }
 
-    public override IEnumerable<GitlabObject> GetChildItems(bool recurse)
+    protected override IEnumerable<GitlabObject> GetChildItemsImpl(bool recurse)
     {
         return GetTree();
     }

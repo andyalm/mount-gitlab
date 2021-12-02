@@ -1,10 +1,9 @@
-﻿using System.Management.Automation;
-using System.Management.Automation.Provider;
-using MountGitlab.Models;
+﻿using System.Management.Automation.Provider;
+using System.Text.RegularExpressions;
 using MountGitlab.PathHandlers;
 
 namespace MountGitlab;
-[CmdletProvider("MountGitlab", ProviderCapabilities.Filter)]
+[CmdletProvider("MountGitlab", ProviderCapabilities.ExpandWildcards)]
 public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext, IContentCmdletProvider
 {
     private static readonly Cache _cache = new();
@@ -14,7 +13,12 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
     protected override string MakePath(string parent, string child)
     {
         var returnValue = base.MakePath(parent, child);
-        //WriteDebug($"{returnValue} MakePath({parent},{child})");
+        if (returnValue.StartsWith(Path.DirectorySeparatorChar) &&
+            returnValue != Path.DirectorySeparatorChar.ToString())
+        {
+            returnValue = returnValue.Substring(1);
+        }
+        WriteDebug($"{returnValue} MakePath({parent},{child})");
 
         return returnValue;
     }
@@ -22,7 +26,7 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
     protected override string GetParentPath(string path, string root)
     {
         var returnValue = base.GetParentPath(path, root);
-        //WriteDebug($"{returnValue} GetParentPath({path}, {root})");
+        WriteDebug($"{returnValue} GetParentPath({path}, {root})");
 
         return returnValue;
     }
@@ -30,7 +34,14 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
     protected override string[] ExpandPath(string path)
     {
         WriteDebug($"ExpandPath({path})");
-        return base.ExpandPath(path);
+        var gitlabPath = GitlabPath.Normalize(path);
+        var pathMatcher = new Regex("^" + Regex.Escape(gitlabPath).Replace(@"\*", ".*") + "$");
+        var parentHandler = GetPathHandler(GitlabPath.GetParent(gitlabPath));
+        WriteDebug($"ExpandPath(pathMatcher: {pathMatcher}, parentPath: {GitlabPath.GetParent(gitlabPath)}");
+        return parentHandler.GetChildItems(recurse: false, useCache: true)
+            .Where(i => pathMatcher.IsMatch(i.FullPath))
+            .Select(i => ToProviderPath(i.FullPath))
+            .ToArray();
     }
 
     protected override bool IsValidPath(string path)
@@ -41,6 +52,11 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
 
     protected override bool ItemExists(string path)
     {
+        if (path.Contains("*"))
+        {
+            return false;
+        }
+        
         var handler = GetPathHandler(path);
         var returnValue = handler.Exists();
         WriteDebug($"{returnValue} {handler.GetType().Name}.ItemExists({handler.Path})");
@@ -61,7 +77,7 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
     protected override bool HasChildItems(string path)
     {
         WriteDebug($"HasChildItems({path})");
-        return GetPathHandler(path).GetChildItems(false).Any();
+        return GetPathHandler(path).GetChildItems(recurse:false, useCache:true).Any();
     }
 
     protected override bool IsItemContainer(string path)
@@ -73,7 +89,7 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
     protected override string NormalizeRelativePath(string path, string basePath)
     {
         var returnValue = base.NormalizeRelativePath(path, basePath);
-        //WriteDebug($"{returnValue} NormalizeRelativePath({path}, {basePath})");
+        WriteDebug($"{returnValue} NormalizeRelativePath({path}, {basePath})");
 
         return returnValue;
     }
@@ -90,7 +106,9 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
         {
             var pathHandler = GetPathHandler(path);
             WriteDebug($"{pathHandler.GetType().Name}.GetChildItems({path})");
-            WriteGitlabObjects(pathHandler.GetChildItems(recurse));
+            var childItems = pathHandler.GetChildItems(recurse, useCache: false);
+            childItems = pathHandler.NormalizeChildItems(childItems);
+            WriteGitlabObjects(childItems);
         }
         catch (Exception ex)
         {
@@ -109,16 +127,21 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
     private void WriteGitlabObject<T>(T gitlabObject) where T : GitlabObject
     {
         WriteDebug($"WriteItemObject<{gitlabObject.UnderlyingObject.TypeNames.First()}>(,{gitlabObject.FullPath},{gitlabObject.IsContainer})");
-        var providerPath =
-            $"{Path.DirectorySeparatorChar}{gitlabObject.FullPath.Replace("/", System.IO.Path.DirectorySeparatorChar.ToString())}";
+        var providerPath = ToProviderPath(gitlabObject.FullPath);
         WriteItemObject(gitlabObject.UnderlyingObject, providerPath, gitlabObject.IsContainer);
+    }
+
+    private static string ToProviderPath(string gitlabPath)
+    {
+        //return $"{Path.DirectorySeparatorChar}{gitlabPath.Replace("/", Path.DirectorySeparatorChar.ToString())}";
+        return $"{gitlabPath.Replace("/", Path.DirectorySeparatorChar.ToString())}";
     }
 
     private IPathHandler GetPathHandler(string path)
     {
         try
         {
-            path = ToNormalizedGitlabPath(path);
+            path = GitlabPath.Normalize(path);
             if (path.StartsWith("/"))
             {
                 throw new InvalidOperationException($"Path '{path}' is invalid. It should not start with a /");
@@ -177,17 +200,6 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
         return new GroupOrProjectPathHandler(path, this);
     }
 
-    private string ToNormalizedGitlabPath(string path)
-    {
-        var normalizedPath = path.Replace(@"\", "/");
-        if (normalizedPath.StartsWith("/"))
-        {
-            return normalizedPath.Substring(1);
-        }
-
-        return normalizedPath;
-    }
-
     public void ClearContent(string path)
     {
         throw new NotSupportedException();
@@ -223,4 +235,6 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
     {
         throw new NotSupportedException();
     }
+
+    bool IPathHandlerContext.Force => base.Force.IsPresent;
 }

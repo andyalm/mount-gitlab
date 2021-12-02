@@ -8,14 +8,14 @@ public class BranchesPathHandler : PathHandler
     {
     }
 
-    protected override bool ExistsImpl() => new ProjectPathHandler(ParentPath, Context).Exists();
+    protected override bool ExistsImpl() => new GroupOrProjectPathHandler(ParentPath, Context).GetProject() != null;
 
     protected override GitlabObject GetItemImpl()
     {
         return new ProjectSection(ParentPath, "branches");
     }
 
-    public override IEnumerable<GitlabObject> GetChildItems(bool recurse)
+    protected override IEnumerable<GitlabObject> GetChildItemsImpl(bool recurse)
     {
         return Context.GetGitlabObjects(b => new GitlabBranch(ParentPath, b),
             "Get-GitlabBranch", "-Project", ParentPath);

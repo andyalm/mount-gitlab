@@ -21,7 +21,7 @@ public class BranchPathHandler : PathHandler
         return GetBranch();
     }
 
-    public override IEnumerable<GitlabObject> GetChildItems(bool recurse)
+    protected override IEnumerable<GitlabObject> GetChildItemsImpl(bool recurse)
     {
         yield return new RefSection(ProjectPath, ItemName, "files");
         yield return new RefSection(ProjectPath, ItemName, "pipelines");

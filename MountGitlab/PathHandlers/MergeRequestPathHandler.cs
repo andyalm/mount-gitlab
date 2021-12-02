@@ -21,7 +21,7 @@ public class MergeRequestPathHandler : PathHandler
         return GetMergeRequest();
     }
 
-    public override IEnumerable<GitlabObject> GetChildItems(bool recurse)
+    protected override IEnumerable<GitlabObject> GetChildItemsImpl(bool recurse)
     {
         return Enumerable.Empty<GitlabObject>();
     }

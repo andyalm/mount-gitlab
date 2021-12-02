@@ -57,7 +57,7 @@ public class JobPathHandler : PathHandler, ISupportContentReader
             "Get-GitlabJob", args.ToArray()).FirstOrDefault();
     }
 
-    public override IEnumerable<GitlabObject> GetChildItems(bool recurse)
+    protected override IEnumerable<GitlabObject> GetChildItemsImpl(bool recurse)
     {
         return Enumerable.Empty<GitlabObject>();
     }

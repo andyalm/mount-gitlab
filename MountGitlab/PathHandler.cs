@@ -32,7 +32,7 @@ public abstract class PathHandler : IPathHandler
 
     public GitlabObject? GetItem()
     {
-        if (Cache.TryGetItem(Path, out var cachedItem))
+        if (!Context.Force && Cache.TryGetItem(Path, out var cachedItem))
         {
             return cachedItem;
         }
@@ -47,7 +47,34 @@ public abstract class PathHandler : IPathHandler
         return item;
     }
 
+    public IEnumerable<GitlabObject> GetChildItems(bool recurse, bool useCache = false)
+    {
+        if (useCache && !Context.Force && Cache.TryGetChildItems(Path, out var cachedChildItems))
+        {
+            WriteDebug($"True Cache.TryGetChildItems({Path})");
+            return cachedChildItems;
+        }
+        WriteDebug($"False Cache.TryGetChildItems({Path})");
+
+        var item = GetItem();
+        if (item != null)
+        {
+            var childItems = GetChildItemsImpl(recurse).ToArray();
+            WriteDebug($"Cache.SetChildItems({item.FullPath}, {childItems.Length})");
+            Cache.SetChildItems(item, childItems);
+
+            return childItems;
+        }
+        
+        return Enumerable.Empty<GitlabObject>();
+    }
+
+    public virtual IEnumerable<GitlabObject> NormalizeChildItems(IEnumerable<GitlabObject> items)
+    {
+        return items;
+    }
+
     protected abstract bool ExistsImpl();
     protected abstract GitlabObject? GetItemImpl();
-    public abstract IEnumerable<GitlabObject> GetChildItems(bool recurse);
+    protected abstract IEnumerable<GitlabObject> GetChildItemsImpl(bool recurse);
 }

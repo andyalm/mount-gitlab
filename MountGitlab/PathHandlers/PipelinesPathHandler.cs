@@ -22,7 +22,7 @@ public class PipelinesPathHandler : PathHandler
     {
         return BranchPipelineMatch.Success
             ? new BranchPathHandler(ParentPath, Context).Exists()
-            : new ProjectPathHandler(ProjectPath, Context).Exists();
+            : new GroupOrProjectPathHandler(ProjectPath, Context).GetProject() != null;
     }
 
     protected override GitlabObject GetItemImpl()
@@ -32,7 +32,7 @@ public class PipelinesPathHandler : PathHandler
             new ProjectSection(ProjectPath, "pipelines");
     }
 
-    public override IEnumerable<GitlabObject> GetChildItems(bool recurse)
+    protected override IEnumerable<GitlabObject> GetChildItemsImpl(bool recurse)
     {
         var args = new List<string> { "-Project", ProjectPath };
         if (BranchPipelineMatch.Success)

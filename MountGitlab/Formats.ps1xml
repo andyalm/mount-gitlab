@@ -1,9 +1,9 @@
 ﻿<Configuration>
   <ViewDefinitions>
     <View>
-      <Name>GitlabGroupOrProject</Name>
+      <Name>GenericGitlabObject</Name>
       <ViewSelectedBy>
-        <TypeName>MountGitlab.GitlabGroupOrProject</TypeName>
+        <TypeName>MountGitlab.GenericGitlabObject</TypeName>
       </ViewSelectedBy>
       <TableControl>
         <TableHeaders>

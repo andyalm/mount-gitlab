@@ -31,7 +31,7 @@ public class PipelinePathHandler : PathHandler
         return GetPipeline();
     }
 
-    public override IEnumerable<GitlabObject> GetChildItems(bool recurse)
+    protected override IEnumerable<GitlabObject> GetChildItemsImpl(bool recurse)
     {
         return Context.GetGitlabObjects(j => new GitlabJob(Path, j),
             "Get-GitlabJob",
