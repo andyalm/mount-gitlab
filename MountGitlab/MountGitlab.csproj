@@ -16,7 +16,7 @@
     </Content>
   </ItemGroup>
   
-  <Target Name="CopyModuleToOutput" AfterTargets="Build">
+  <Target Name="CopyModuleToOutput" AfterTargets="Build" Condition="$(Configuration)=='Release'">
     <ItemGroup>
       <ModuleFile Include="$(OutputPath)\*.*" />
     </ItemGroup>
