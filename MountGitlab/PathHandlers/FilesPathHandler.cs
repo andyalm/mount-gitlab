@@ -59,17 +59,18 @@ public class FilesPathHandler : PathHandler, ISupportContentReader
 
     protected override GitlabObject? GetItemImpl()
     {
+        WriteDebug($"FilesPathHandler.GetItemImpl(FilePath={FilePath}, FilesRootPath={FilesRootPath}, ProjectPath={ProjectPath})");
         if (string.IsNullOrEmpty(FilePath))
         {
             return new GitlabRepositoryTree(FilesRootPath, new PSObject(new
             {
                 Name = "files",
                 Type = "tree",
-                Path
+                Path = ""
             }));
         }
         
-        var file = GetFile();
+        var file = GetFileAsTree();
         if (file != null)
         {
             return file;
@@ -103,6 +104,13 @@ public class FilesPathHandler : PathHandler, ISupportContentReader
     private GitlabRepositoryFile? GetFile()
     {
         return Context.GetGitlabObjects(f => new GitlabRepositoryFile(FilesRootPath, f),
+                "Get-GitlabRepositoryFile", WithOptionalRefParam("-Project", ProjectPath, "-FilePath", FilePath))
+            .FirstOrDefault();
+    }
+
+    private GitlabRepositoryTree? GetFileAsTree()
+    {
+        return Context.GetGitlabObjects(f => GitlabRepositoryTree.FromGitlabFile(FilesRootPath, f),
                 "Get-GitlabRepositoryFile", WithOptionalRefParam("-Project", ProjectPath, "-FilePath", FilePath))
             .FirstOrDefault();
     }

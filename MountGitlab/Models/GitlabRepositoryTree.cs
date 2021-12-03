@@ -4,6 +4,17 @@ namespace MountGitlab.Models;
 
 public class GitlabRepositoryTree : GitlabObject
 {
+    public static GitlabRepositoryTree FromGitlabFile(string filesPath, PSObject fileObject)
+    {
+        var tree = new
+        {
+            Name = (string)fileObject.Properties["FileName"].Value,
+            Type = "blob",
+            Path = (string)fileObject.Properties["FilePath"].Value
+        };
+        return new GitlabRepositoryTree(filesPath, new PSObject(tree));
+    }
+    
     public string FilesPath { get; }
     
     public GitlabRepositoryTree(string filesPath, PSObject underlyingObject) : base(underlyingObject)

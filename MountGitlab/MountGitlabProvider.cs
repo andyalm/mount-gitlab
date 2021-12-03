@@ -1,4 +1,5 @@
-﻿using System.Management.Automation.Provider;
+﻿using System.Management.Automation;
+using System.Management.Automation.Provider;
 using System.Text.RegularExpressions;
 using MountGitlab.PathHandlers;
 
@@ -13,12 +14,40 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
     protected override string MakePath(string parent, string child)
     {
         var returnValue = base.MakePath(parent, child);
-        if (returnValue.StartsWith(Path.DirectorySeparatorChar) &&
-            returnValue != Path.DirectorySeparatorChar.ToString())
-        {
-            returnValue = returnValue.Substring(1);
-        }
-        WriteDebug($"{returnValue} MakePath({parent},{child})");
+        // if (returnValue.StartsWith(Path.DirectorySeparatorChar) &&
+        //     returnValue != Path.DirectorySeparatorChar.ToString())
+        // {
+        //     returnValue = returnValue.Substring(1);
+        // }
+        //WriteDebug($"{returnValue} MakePath({parent},{child})");
+
+        return returnValue;
+    }
+
+    protected override string GetChildName(string path)
+    {
+        var returnValue = base.GetChildName(path);
+        WriteDebug($"{returnValue} GetChildName({path})");
+
+        return returnValue;
+    }
+
+    protected override void GetChildNames(string path, ReturnContainers returnContainers)
+    {
+        WriteDebug($"GetChildNames({path}, {returnContainers})");
+        base.GetChildNames(path, returnContainers);
+    }
+
+    protected override void InvokeDefaultAction(string path)
+    {
+        WriteDebug($"InvokeDefaultAction({path})");
+        base.InvokeDefaultAction(path);
+    }
+
+    protected override bool ConvertPath(string path, string filter, ref string updatedPath, ref string updatedFilter)
+    {
+        var returnValue = base.ConvertPath(path, filter, ref updatedPath, ref updatedFilter);
+        WriteDebug($"{returnValue} ConvertPath({path}, {filter}, {updatedPath}, {updatedFilter})");
 
         return returnValue;
     }
@@ -26,7 +55,7 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
     protected override string GetParentPath(string path, string root)
     {
         var returnValue = base.GetParentPath(path, root);
-        WriteDebug($"{returnValue} GetParentPath({path}, {root})");
+        //WriteDebug($"{returnValue} GetParentPath({path}, {root})");
 
         return returnValue;
     }
@@ -133,8 +162,8 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
 
     private static string ToProviderPath(string gitlabPath)
     {
-        //return $"{Path.DirectorySeparatorChar}{gitlabPath.Replace("/", Path.DirectorySeparatorChar.ToString())}";
-        return $"{gitlabPath.Replace("/", Path.DirectorySeparatorChar.ToString())}";
+        return $"{Path.DirectorySeparatorChar}{gitlabPath.Replace("/", Path.DirectorySeparatorChar.ToString())}";
+        //return $"{gitlabPath.Replace("/", Path.DirectorySeparatorChar.ToString())}";
     }
 
     private IPathHandler GetPathHandler(string path)
