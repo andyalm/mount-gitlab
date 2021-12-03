@@ -64,13 +64,29 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
     {
         WriteDebug($"ExpandPath({path})");
         var gitlabPath = GitlabPath.Normalize(path);
-        var pathMatcher = new Regex("^" + Regex.Escape(gitlabPath).Replace(@"\*", ".*") + "$");
+        var pathMatcher = new Regex("^" + Regex.Escape(gitlabPath).Replace(@"\*", ".*") + "$", RegexOptions.IgnoreCase);
         var parentHandler = GetPathHandler(GitlabPath.GetParent(gitlabPath));
-        WriteDebug($"ExpandPath(pathMatcher: {pathMatcher}, parentPath: {GitlabPath.GetParent(gitlabPath)}");
-        return parentHandler.GetChildItems(recurse: false, useCache: true)
-            .Where(i => pathMatcher.IsMatch(i.FullPath))
-            .Select(i => ToProviderPath(i.FullPath))
-            .ToArray();
+        WriteDebug($"ExpandPath(pathMatcher: {pathMatcher}, parentPath: {GitlabPath.GetParent(gitlabPath)}, parentHandler: {parentHandler.GetType().Name}");
+        try
+        {
+            var children = parentHandler.GetChildItems(recurse: false, useCache: true)
+                .Where(i => pathMatcher.IsMatch(i.FullPath))
+                .Select(i => ToProviderPath(i.FullPath))
+                .Select(p => GitlabPath.GetParent(p) == "/" && p.StartsWith("/") ? p.Substring(1) : p)
+                .ToArray();
+
+            foreach (var child in children)
+            {
+                WriteDebug($"ExpandedPath: {child}");
+            }
+
+            return children;
+        }
+        catch (Exception ex)
+        {
+            WriteDebug(ex.ToString());
+            throw;
+        }
     }
 
     protected override bool IsValidPath(string path)
@@ -118,6 +134,10 @@ public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext
     protected override string NormalizeRelativePath(string path, string basePath)
     {
         var returnValue = base.NormalizeRelativePath(path, basePath);
+        if (returnValue.StartsWith(Path.DirectorySeparatorChar) && basePath == Path.DirectorySeparatorChar.ToString())
+        {
+            returnValue = returnValue.Substring(1);
+        }
         WriteDebug($"{returnValue} NormalizeRelativePath({path}, {basePath})");
 
         return returnValue;
