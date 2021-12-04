@@ -21,7 +21,6 @@ Install-Module -Name MountGitlab
 
 ```powershell
 Import-Module MountGitlab
-New-PSDrive -Name gitlab -PSProvider MountGitlab -Root /
 ```
 ## Usage
 
@@ -59,5 +58,5 @@ dir files
 dir pipelines/12345
 
 # print out the job trace for a specific job
-cat pipelines/12345/build
+gc pipelines/12345/build
 ```

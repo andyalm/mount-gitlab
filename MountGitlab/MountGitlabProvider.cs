@@ -1,15 +1,25 @@
-﻿using System.Management.Automation;
+﻿using System.Collections.ObjectModel;
+using System.Management.Automation;
 using System.Management.Automation.Provider;
 using System.Text.RegularExpressions;
 using MountGitlab.PathHandlers;
 
 namespace MountGitlab;
-[CmdletProvider("MountGitlab", ProviderCapabilities.ExpandWildcards)]
+[CmdletProvider("MountGitlab", ProviderCapabilities.ExpandWildcards | ProviderCapabilities.Filter)]
 public class MountGitlabProvider : NavigationCmdletProvider, IPathHandlerContext, IContentCmdletProvider
 {
     private static readonly Cache _cache = new();
 
     public Cache Cache => _cache;
+
+    protected override Collection<PSDriveInfo> InitializeDefaultDrives()
+    {
+        return new Collection<PSDriveInfo>
+        {
+            new PSDriveInfo("gitlab", this.ProviderInfo, this.ItemSeparator.ToString(),
+                "Allows you to navigate gitlab via your GitlabCli configuration", null)
+        };
+    }
 
     protected override string MakePath(string parent, string child)
     {

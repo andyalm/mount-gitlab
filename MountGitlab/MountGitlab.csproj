@@ -17,7 +17,7 @@
   </ItemGroup>
   
   <Target Name="CopyModuleToOutput" AfterTargets="Build">
-    <Exec Command="pwsh CreateManifest.ps1 &quot;$(OutputPath)&quot;" WorkingDirectory="$(MSBuildProjectDirectory)" />
+    <Exec Command="pwsh CreateManifest.ps1 $(OutputPath)" WorkingDirectory="$(MSBuildProjectDirectory)" />
     <ItemGroup>
       <ModuleFile Include="$(OutputPath)\*.*" />
     </ItemGroup>
