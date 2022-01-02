@@ -1,17 +1,16 @@
 ﻿using System.Management.Automation;
+using MountAnything;
 
 namespace MountGitlab.Models;
 
-public class ProjectSection : GitlabObject
+public class ProjectSection : Item
 {
-    public ProjectSection(string projectPath, string sectionName) : base("MountGitlab.ProjectSection",new
+    public ProjectSection(ItemPath projectPath, string sectionName) : base(projectPath, new PSObject())
     {
-        Name = sectionName,
-        ProjectPath = projectPath,
-        FullPath = $"{projectPath}/{sectionName}"
-    }) {}
+        ItemName = sectionName;
+    }
 
-    public override string Name => Property<string>("Name");
-    public override string FullPath => Property<string>("FullPath");
+    public override string ItemName { get; }
+    protected override string TypeName => "MountGitlab.ProjectSection";
     public override bool IsContainer => true;
 }

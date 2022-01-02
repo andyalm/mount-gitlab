@@ -1,19 +1,15 @@
-﻿using MountGitlab.Models;
+﻿using MountAnything;
+using MountGitlab.Models;
 
 namespace MountGitlab.PathHandlers;
 
 public class GroupOrProjectPathHandler : PathHandler
 {
-    public GroupOrProjectPathHandler(string path, IPathHandlerContext context) : base(path, context) { }
+    public GroupOrProjectPathHandler(ItemPath path, IPathHandlerContext context) : base(path, context) { }
 
-    protected override bool ExistsImpl()
+    protected override IItem? GetItemImpl()
     {
-        return GetItem() != null;
-    }
-
-    protected override GitlabObject? GetItemImpl()
-    {
-        var group = Context.GetGroups( "-GroupId", Path)
+        var group = Context.GetGroups( "-GroupId", Path.ToString())
             .FirstOrDefault();
 
         if (group != null)
@@ -24,56 +20,47 @@ public class GroupOrProjectPathHandler : PathHandler
         return GetProjectImpl();
     }
 
-    public GitlabProject? GetProject()
+    public GroupOrProjectItem? GetProject()
     {
         if (Cache.TryGetItem(Path, out var item))
         {
-            return item as GitlabProject;
+            return item.Item as GroupOrProjectItem;
         }
 
         return GetProjectImpl();
     }
 
-    private GitlabProject? GetProjectImpl()
+    private GroupOrProjectItem? GetProjectImpl()
     {
-        return Context.GetProjects("-ProjectId", Path).FirstOrDefault();
+        return Context.GetProjects("-ProjectId", Path.ToString()).FirstOrDefault();
     }
 
-    protected override IEnumerable<GitlabObject> GetChildItemsImpl(bool recurse)
+    protected override IEnumerable<IItem> GetChildItemsImpl()
     {
-        var item = GetItem();
+        var item = GetItem() as GroupOrProjectItem;
         WriteDebug($"GetChildItemsImpl<{item?.GetType().Name}>");
         return item switch
         {
-            GitlabGroup => GetGroupChildren(recurse),
-            GitlabProject => GetProjectChildren(recurse),
-            _ => Enumerable.Empty<GitlabObject>()
+            { IsProject: true } => GetProjectChildren(),
+            not null => GetGroupChildren(),
+            _ => Enumerable.Empty<IItem>()
         };
     }
 
-    public override IEnumerable<GitlabObject> NormalizeChildItems(IEnumerable<GitlabObject> items)
+    private IEnumerable<IItem> GetGroupChildren()
     {
-        var itemsByType = items.GroupBy(i => i.GetType());
-        if (itemsByType.Count() > 1)
-        {
-            return items.Select(i => new GenericGitlabObject(i));
-        }
-
-        return items;
+        return Context.GetGroups("-ParentGroupId", Path.ToString())
+            .Concat(Context.GetProjects("-GroupId", Path.ToString()));
     }
 
-    private IEnumerable<GitlabObject> GetGroupChildren(bool recurse)
-    {
-        return Context.GetGroups("-ParentGroupId", Path)
-            .Cast<GitlabObject>()
-            .Concat(Context.GetProjects("-GroupId", Path));
-    }
-
-    private IEnumerable<GitlabObject> GetProjectChildren(bool recurse)
+    private IEnumerable<IItem> GetProjectChildren()
     {
         yield return new ProjectSection(Path, "branches");
         yield return new ProjectSection(Path, "files");
         yield return new ProjectSection(Path, "merge-requests");
         yield return new ProjectSection(Path, "pipelines");
     }
+
+    public override Freshness GetItemCommandDefaultFreshness => Freshness.Default;
+    public override Freshness GetChildItemsCommandDefaultFreshness => Freshness.Default;
 }

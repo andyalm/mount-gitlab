@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+﻿using MountAnything;
 using MountGitlab.Models;
 
 namespace MountGitlab.PathHandlers;
@@ -7,12 +7,12 @@ public class PipelinePathHandler : PathHandler
 {
     private readonly PipelinesPathHandler _parentHandler;
     
-    public PipelinePathHandler(string path, IPathHandlerContext context) : base(path, context)
+    public PipelinePathHandler(ItemPath path, IPathHandlerContext context, ProjectPath projectPath, CurrentBranch currentBranch) : base(path, context)
     {
-        _parentHandler = new PipelinesPathHandler(ParentPath, Context);
+        _parentHandler = new PipelinesPathHandler(ParentPath, Context, projectPath, currentBranch);
     }
 
-    public string ProjectPath => _parentHandler.ProjectPath;
+    public ProjectPath ProjectPath => _parentHandler.ProjectPath;
 
     public string PipelineId => ItemName;
 
@@ -26,33 +26,27 @@ public class PipelinePathHandler : PathHandler
         return GetItem() != null;
     }
 
-    protected override GitlabObject? GetItemImpl()
+    protected override IItem? GetItemImpl()
     {
         return GetPipeline();
     }
 
-    protected override IEnumerable<GitlabObject> GetChildItemsImpl(bool recurse)
+    protected override IEnumerable<IItem> GetChildItemsImpl()
     {
-        return Context.GetGitlabObjects(j => new GitlabJob(Path, j),
+        return Context.GetItems(j => new GitlabJob(Path, j),
             "Get-GitlabJob",
-            "-ProjectId", _parentHandler.ProjectPath,
+            "-ProjectId", _parentHandler.ProjectPath.ToString(),
             "-PipelineId", ItemName);
     }
 
     private GitlabPipeline? GetPipeline()
     {
-        var pipeline = Context.GetGitlabObjects(p => new GitlabPipeline(ParentPath, p),
-            p => _parentHandler.BranchName == null || p.Ref == _parentHandler.BranchName,
+        var pipeline = Context.GetItems(p => new GitlabPipeline(ParentPath, p),
+            p => _parentHandler.CurrentBranch.IsDefault || p.Ref == _parentHandler.CurrentBranch.Value,
             "Get-GitlabPipeline",
-            "-ProjectId", _parentHandler.ProjectPath,
+            "-ProjectId", _parentHandler.ProjectPath.ToString(),
             "-PipelineId", ItemName).FirstOrDefault();
 
         return pipeline;
-    }
-    
-    private static readonly Regex PathRegex = new(@"pipelines/\d+$");
-    public static bool Matches(string path)
-    {
-        return PathRegex.IsMatch(path);
     }
 }

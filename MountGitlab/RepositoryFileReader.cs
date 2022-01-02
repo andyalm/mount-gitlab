@@ -1,8 +1,9 @@
-﻿using MountGitlab.Models;
+﻿using MountAnything.Content;
+using MountGitlab.Models;
 
 namespace MountGitlab;
 
-public class RepositoryFileReader : MemoryStreamContentReader
+public class RepositoryFileReader : StreamContentReader
 {
     private readonly GitlabRepositoryFile _file;
 

@@ -1,27 +1,23 @@
 ﻿using System.Text.RegularExpressions;
+using MountAnything;
 using MountGitlab.Models;
 
 namespace MountGitlab.PathHandlers;
 
 public class BranchPathHandler : PathHandler
 {
-    public BranchPathHandler(string path, IPathHandlerContext context) : base(path, context)
+    public BranchPathHandler(ItemPath path, IPathHandlerContext context) : base(path, context)
     {
     }
 
-    public string ProjectPath => GitlabPath.GetParent(ParentPath);
+    public ItemPath ProjectPath => ParentPath.Parent;
 
-    protected override bool ExistsImpl()
-    {
-        return GetItem() != null;
-    }
-
-    protected override GitlabObject? GetItemImpl()
+    protected override IItem? GetItemImpl()
     {
         return GetBranch();
     }
 
-    protected override IEnumerable<GitlabObject> GetChildItemsImpl(bool recurse)
+    protected override IEnumerable<IItem> GetChildItemsImpl()
     {
         yield return new RefSection(ProjectPath, ItemName, "files");
         yield return new RefSection(ProjectPath, ItemName, "pipelines");
@@ -29,18 +25,7 @@ public class BranchPathHandler : PathHandler
 
     public GitlabBranch? GetBranch()
     {
-        return Context.GetGitlabObjects(b => new GitlabBranch(ProjectPath, b), "Get-GitlabBranch", "-Project", ProjectPath, "-Ref",
+        return Context.GetItems(b => new GitlabBranch(ParentPath, b), "Get-GitlabBranch", "-Project", ProjectPath.ToString(), "-Ref",
             ItemName).FirstOrDefault();
-    }
-
-    private static readonly Regex PathRegex = BuildRegex("$");
-    public static bool Matches(string path)
-    {
-        return PathRegex.IsMatch(path);
-    }
-
-    public static Regex BuildRegex(string suffix)
-    {
-        return new Regex(@$"^(?<ProjectPath>.+)/branches/(?<BranchName>[a-z0-9_\-]+){suffix}", RegexOptions.IgnoreCase);
     }
 }

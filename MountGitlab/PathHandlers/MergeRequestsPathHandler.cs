@@ -1,23 +1,27 @@
-﻿using MountGitlab.Models;
+﻿using MountAnything;
+using MountGitlab.Models;
 
 namespace MountGitlab.PathHandlers;
 
 public class MergeRequestsPathHandler : PathHandler
 {
-    public MergeRequestsPathHandler(string path, IPathHandlerContext context) : base(path, context)
+    public MergeRequestsPathHandler(ItemPath path, IPathHandlerContext context, ProjectPath projectPath) : base(path, context)
     {
+        ProjectPath = projectPath;
     }
 
-    protected override bool ExistsImpl() => new GroupOrProjectPathHandler(ParentPath, Context).GetProject() != null;
+    public ProjectPath ProjectPath { get; }
 
-    protected override GitlabObject GetItemImpl()
+    protected override bool ExistsImpl() => new GroupOrProjectPathHandler(ProjectPath.ItemPath, Context).GetProject() != null;
+
+    protected override IItem GetItemImpl()
     {
-        return new ProjectSection(ParentPath, "merge-requests");
+        return new ProjectSection(ProjectPath.ItemPath, "merge-requests");
     }
 
-    protected override IEnumerable<GitlabObject> GetChildItemsImpl(bool recurse)
+    protected override IEnumerable<IItem> GetChildItemsImpl()
     {
-        return Context.GetGitlabObjects(b => new GitlabMergeRequest(b),
-            "Get-GitlabMergeRequest", "-Project", ParentPath);
+        return Context.GetItems(b => new GitlabMergeRequest(Path, b),
+            "Get-GitlabMergeRequest", "-Project", ProjectPath.ToString());
     }
 }

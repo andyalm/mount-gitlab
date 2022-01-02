@@ -1,23 +1,23 @@
 ﻿using System.Management.Automation;
+using MountAnything;
 
 namespace MountGitlab.Models;
 
-public class GitlabJob : GitlabObject
+public class GitlabJob : Item
 {
-    public string ContainerPath { get; }
-    private string NameProperty { get; }
-    
-    public GitlabJob(string containerPath, PSObject underlyingObject, string nameProperty = "Name") : base(underlyingObject)
-    {
-        ContainerPath = containerPath;
-        NameProperty = nameProperty;
-    }
+    public GitlabJob(ItemPath parentPath, PSObject underlyingObject) : base(parentPath, underlyingObject) { }
 
     public long Id => Property<long>("Id");
-    
-    public string JobName => Property<string>("Name");
-    public string ProjectId => Property<object>("ProjectId").ToString()!;
-    public override string Name => Property<object>(NameProperty).ToString()!;
-    public override string FullPath => $"{ContainerPath}/{Name}";
+
+    public override string ItemName => Property<string>("Name")!;
+
+    protected override IEnumerable<string> Aliases
+    {
+        get
+        {
+            yield return Id.ToString();
+        }
+    }
+    public string ProjectId => Property<object>("ProjectId")!.ToString()!;
     public override bool IsContainer => false;
 }
