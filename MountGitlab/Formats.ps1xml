@@ -22,7 +22,7 @@
                 <Alignment>Right</Alignment>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>Name</PropertyName>
+                <PropertyName>ItemName</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>Url</PropertyName>
