@@ -6,9 +6,11 @@ param(
 $ErrorActionPreference='Stop'
 
 $ModuleVersion='0.0.1'
-if($env:GITHUB_REF_NAME -and $env:GITHUB_REF_NAME -match '^v(?<Version>\d+\.\d+\.\d+)$') {
+Write-Host "Github release tag: $env:GithubReleaseTag"
+if($env:GithubReleaseTag -and $env:GithubReleaseTag -match '^v(?<Version>\d+\.\d+\.\d+)$') {
     $ModuleVersion = $Matches.Version
 }
+Write-Host "Module version: $ModuleVersion"
 
 New-ModuleManifest -Path $(Join-Path $Directory MountGitlab.psd1) `
     -RootModule 'MountGitlab.dll' `
@@ -23,4 +25,6 @@ New-ModuleManifest -Path $(Join-Path $Directory MountGitlab.psd1) `
     -FunctionsToExport @() `
     -VariablesToExport @() `
     -CmdletsToExport @() `
-    -AliasesToExport @()
+    -AliasesToExport @() `
+    -ReleaseNotes $($env:GithubReleaseNotes ?? 'Unavailable') `
+    -LicenseUri 'https://github.com/andyalm/mount-gitlab/blob/main/LICENSE'

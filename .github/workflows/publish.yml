@@ -4,11 +4,9 @@ name: Publish
 
 # Controls when the action will run. 
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
-  push:
-    tags:
-      - v0.*.*
-      - v1.*.*
+  # Triggers the workflow when a stable or pre-release release is published
+  release:
+    types: [ published ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -37,6 +35,8 @@ jobs:
         run: pwsh publish.ps1
         env:
           NuGetApiKey: ${{ secrets.PS_GALLERY_KEY }}
+          GithubReleaseNotes: ${{ github.event.release.body }}
+          GithubReleaseTag: ${{ github.event.release.tag_name }}
     environment:
       name: PowerShell Gallery
       url: https://www.powershellgallery.com/packages/MountGitlab
