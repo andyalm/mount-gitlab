@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Management.Automation.Provider;
-using System.Text.RegularExpressions;
 using Autofac;
 using MountAnything;
 using MountAnything.Routing;
@@ -19,9 +18,8 @@ public class MountGitlabProvider : MountAnythingProvider
                 "Allows you to navigate gitlab via your GitlabCli configuration", null)
         };
     }
-
-
-    public override Router CreateRouter()
+    
+    protected override Router CreateRouter()
     {
         var router = Router.Create<RootPathHandler>();
         
