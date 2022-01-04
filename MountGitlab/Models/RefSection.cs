@@ -1,16 +1,21 @@
-﻿namespace MountGitlab.Models;
+﻿using System.Management.Automation;
+using MountAnything;
 
-public class RefSection : GitlabObject
+namespace MountGitlab.Models;
+
+public class RefSection : Item
 {
-    public RefSection(string projectPath, string refName, string sectionName) : base("MountGitlab.RefSection",new
+    public RefSection(ItemPath projectPath, string refName, string sectionName) : base(
+        projectPath.Combine("branches", refName), new PSObject(new
+        {
+            ProjectPath = projectPath,
+            Ref = refName,
+        }))
     {
-        Name = sectionName,
-        ProjectPath = projectPath,
-        Ref = refName,
-        FullPath = $"{projectPath}/branches/{refName}/{sectionName}"
-    }) {}
+        ItemName = sectionName;
+    }
 
-    public override string Name => Property<string>("Name");
-    public override string FullPath => Property<string>("FullPath");
+    public override string ItemName { get; }
+    protected override string TypeName => "MountGitlab.RefSection";
     public override bool IsContainer => true;
 }

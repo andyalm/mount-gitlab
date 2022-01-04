@@ -8,6 +8,8 @@ on:
   push:
     branches:
       - '**'
+    tags:
+      - v*.*.*
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -31,5 +33,9 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 6.0.x
-      
-      - run: dotnet build
+
+      - name: Build
+        run: dotnet publish
+
+      - name: Verify Module Loads
+        run: pwsh -c 'Install-Module -Name GitlabCli -Force && Import-Module ./bin/MountGitlab'

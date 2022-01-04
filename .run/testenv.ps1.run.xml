@@ -1,0 +1,15 @@
+﻿<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="testenv.ps1" type="RunExe" factoryName=".NET Executable">
+    <option name="EXE_PATH" value="c:/Program Files/PowerShell/7/pwsh.exe" />
+    <option name="PROGRAM_PARAMETERS" value="-Interactive -NoExit -c &quot;Import-Module $PWD/MountGitlab/bin/Debug/net6.0/MountGitlab.psd1 &amp;&amp; cd gitlab:&quot;" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <option name="PASS_PARENT_ENVS" value="1" />
+    <option name="USE_EXTERNAL_CONSOLE" value="0" />
+    <option name="USE_MONO" value="0" />
+    <option name="RUNTIME_ARGUMENTS" value="" />
+    <option name="RUNTIME_TYPE" value="coreclr" />
+    <method v="2">
+      <option name="Build Solution" enabled="true" />
+    </method>
+  </configuration>
+</component>

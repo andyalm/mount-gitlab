@@ -1,9 +1,9 @@
 ﻿<Configuration>
   <ViewDefinitions>
     <View>
-      <Name>GenericGitlabObject</Name>
+      <Name>GroupOrProjectItem</Name>
       <ViewSelectedBy>
-        <TypeName>MountGitlab.GenericGitlabObject</TypeName>
+        <TypeName>MountGitlab.GroupOrProjectItem</TypeName>
       </ViewSelectedBy>
       <TableControl>
         <TableHeaders>
@@ -41,17 +41,12 @@
         <TableHeaders>
           <TableColumnHeader>
           </TableColumnHeader>
-          <TableColumnHeader>
-          </TableColumnHeader>
         </TableHeaders>
         <TableRowEntries>
           <TableRowEntry>
             <TableColumnItems>
               <TableColumnItem>
                 <PropertyName>Name</PropertyName>
-              </TableColumnItem>
-              <TableColumnItem>
-                <PropertyName>ProjectPath</PropertyName>
               </TableColumnItem>
             </TableColumnItems>
           </TableRowEntry>
@@ -83,6 +78,32 @@
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>Ref</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+    <View>
+      <Name>GitlabRepositoryItem</Name>
+      <ViewSelectedBy>
+        <TypeName>MountGitlab.GitlabRepositoryItem</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+          </TableColumnHeader>
+          <TableColumnHeader>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>Name</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>ItemType</PropertyName>
               </TableColumnItem>
             </TableColumnItems>
           </TableRowEntry>

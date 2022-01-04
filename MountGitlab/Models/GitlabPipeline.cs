@@ -1,19 +1,16 @@
 ﻿using System.Management.Automation;
+using MountAnything;
 
 namespace MountGitlab.Models;
 
-public class GitlabPipeline : GitlabObject
+public class GitlabPipeline : Item
 {
-    public string ContainerPath { get; }
-    
-    public GitlabPipeline(string containerPath, PSObject underlyingObject) : base(underlyingObject)
+    public GitlabPipeline(ItemPath parentPath, PSObject underlyingObject) : base(parentPath, underlyingObject)
     {
-        ContainerPath = containerPath;
+        
     }
 
-    public override string Name => Property<long>("Id").ToString();
-    public override string FullPath => $"{ContainerPath}/{Name}";
+    public override string ItemName => Property<string>("Id")!;
     public override bool IsContainer => true;
-
-    public string Ref => Property<string>("Ref");
+    public string Ref => Property<string>("Ref")!;
 }

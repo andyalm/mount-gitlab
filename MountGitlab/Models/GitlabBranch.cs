@@ -1,17 +1,15 @@
 ﻿using System.Management.Automation;
+using MountAnything;
 
 namespace MountGitlab.Models;
 
-public class GitlabBranch : GitlabObject
+public class GitlabBranch : Item
 {
-    public string ProjectPath { get; }
-    
-    public GitlabBranch(string projectPath, PSObject underlyingObject) : base(underlyingObject)
+    public GitlabBranch(ItemPath parentPath, PSObject underlyingObject) : base(parentPath, underlyingObject)
     {
-        ProjectPath = projectPath;
+        
     }
 
-    public override string Name => Property<string>("Name");
-    public override string FullPath => $"{ProjectPath}/branches/{Name}";
+    public override string ItemName => Property<string>("Name")!;
     public override bool IsContainer => true;
 }

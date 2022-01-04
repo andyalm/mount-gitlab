@@ -1,22 +1,17 @@
 ﻿using System.Management.Automation;
+using MountAnything;
 
 namespace MountGitlab.Models;
 
-public class GitlabRepositoryFile : GitlabObject
+public class GitlabRepositoryFile
 {
-    public string FilesPath { get; set; }
+    private PSObject UnderlyingObject { get; }
     
-    public GitlabRepositoryFile(string filesPath, PSObject underlyingObject) : base(underlyingObject)
+    public GitlabRepositoryFile(PSObject underlyingObject)
     {
-        FilesPath = filesPath;
+        UnderlyingObject = underlyingObject;
     }
-
-    public override string Name => Property<string>("FileName");
-    public override string FullPath => GitlabPath.Combine(FilesPath, FilePath);
-    public override bool IsContainer => false;
-    public string FilePath => Property<string>("FilePath");
-
-    public string Encoding => Property<string>("Encoding");
-
-    public string Base64Content => Property<string>("Content");
+    
+    public string Encoding => UnderlyingObject.Property<string>("Encoding")!;
+    public string Base64Content => UnderlyingObject.Property<string>("Content")!;
 }

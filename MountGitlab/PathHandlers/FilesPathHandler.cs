@@ -1,43 +1,28 @@
-﻿using System.Management.Automation;
-using System.Management.Automation.Provider;
-using System.Text.RegularExpressions;
+﻿using System.Management.Automation.Provider;
+using MountAnything;
+using MountAnything.Content;
 using MountGitlab.Models;
 
 namespace MountGitlab.PathHandlers;
 
-public class FilesPathHandler : PathHandler, ISupportContentReader
+public class FilesPathHandler : PathHandler, IContentReaderHandler
 {
-    private static readonly Regex BranchesPathRegex = BranchPathHandler.BuildRegex("/files/?(?<FilePath>.*)$");
-    private static readonly Regex ProjectPathRegex = new(@"^(?<ProjectPath>.+)/files/?(?<FilePath>.*)$");
+    private ItemPath FilePath { get; }
 
-    public static bool Matches(string path)
-    {
-        return BranchesPathRegex.IsMatch(path) || ProjectPathRegex.IsMatch(path);
-    }
+    private ItemPath FilesRootPath { get; }
 
-    private readonly Match _branchesPathMatch;
-    public string ProjectPath { get; }
-
-    public string FilePath { get; }
+    private ItemPath ProjectPath { get; }
     
-    public string FilesRootPath { get; }
+    private CurrentBranch CurrentBranch { get; }
     
-    public FilesPathHandler(string path, IPathHandlerContext context) : base(path, context)
+    public FilesPathHandler(ItemPath path, IPathHandlerContext context,
+        ProjectPath projectPath, CurrentBranch currentBranch,
+        FilePath filePath) : base(path, context)
     {
-        _branchesPathMatch = BranchesPathRegex.Match(path);
-        if (_branchesPathMatch.Success)
-        {
-            ProjectPath = _branchesPathMatch.Groups["ProjectPath"].Value;
-            FilePath = _branchesPathMatch.Groups["FilePath"].Value;
-            FilesRootPath = GitlabPath.Combine(ProjectPath, "branches", _branchesPathMatch.Groups["BranchName"].Value, "files");
-        }
-        else
-        {
-            var projectPathMatch = ProjectPathRegex.Match(path);
-            ProjectPath = projectPathMatch.Groups["ProjectPath"].Value;
-            FilePath = projectPathMatch.Groups["FilePath"].Value;
-            FilesRootPath = GitlabPath.Combine(ProjectPath, "files");
-        }
+        ProjectPath = projectPath.ItemPath;
+        CurrentBranch = currentBranch;
+        FilesRootPath = Path.Ancestor("files");
+        FilePath = filePath.ItemPath;
     }
 
     protected override bool ExistsImpl()
@@ -47,27 +32,22 @@ public class FilesPathHandler : PathHandler, ISupportContentReader
             WriteDebug($"FilesPathHandler: Project {ProjectPath} does not exist");
             return false;
         }
-
-        if (_branchesPathMatch.Success && !BranchesPathExists())
+    
+        if (!CurrentBranch.IsDefault && !BranchesPathExists())
         {
-            WriteDebug($"FilesPathHandler: Branch {_branchesPathMatch.Groups["BranchName"].Value} does not exist");
+            WriteDebug($"FilesPathHandler: Branch {CurrentBranch.Value} does not exist");
             return false;
         }
-
+    
         return GetItem() != null;
     }
 
-    protected override GitlabObject? GetItemImpl()
+    protected override IItem? GetItemImpl()
     {
         WriteDebug($"FilesPathHandler.GetItemImpl(FilePath={FilePath}, FilesRootPath={FilesRootPath}, ProjectPath={ProjectPath})");
-        if (string.IsNullOrEmpty(FilePath))
+        if (FilePath.IsRoot)
         {
-            return new GitlabRepositoryTree(FilesRootPath, new PSObject(new
-            {
-                Name = "files",
-                Type = "tree",
-                Path = ""
-            }));
+            return new GitlabRepositoryItem(FilesRootPath, FilePath, RepositoryItemType.Tree);
         }
         
         var file = GetFileAsTree();
@@ -79,53 +59,49 @@ public class FilesPathHandler : PathHandler, ISupportContentReader
         var tree = GetTree();
         if (tree.Any())
         {
-            return new GitlabRepositoryTree(FilesRootPath, new PSObject(new
-            {
-                Name = ItemName,
-                Type = "tree",
-                Path = FilePath
-            }));
+            return new GitlabRepositoryItem(FilesRootPath, FilePath,RepositoryItemType.Tree);
         }
 
         return null;
     }
 
-    protected override IEnumerable<GitlabObject> GetChildItemsImpl(bool recurse)
+    protected override IEnumerable<IItem> GetChildItemsImpl()
     {
         return GetTree();
     }
 
-    private IEnumerable<GitlabRepositoryTree> GetTree()
+    private IEnumerable<GitlabRepositoryItem> GetTree()
     {
-        return Context.GetGitlabObjects(t => new GitlabRepositoryTree(FilesRootPath, t),
-            "Get-GitlabRepositoryTree", WithOptionalRefParam("-Project", ProjectPath, "-Path", $"'{FilePath}'"));
+        return Context.GetItems(t => GitlabRepositoryItem.FromTree(FilesRootPath, t),
+            "Get-GitlabRepositoryTree", WithOptionalRefParam("-Project", ProjectPath.ToString(), "-Path", FilePath.IsRoot ? "''" : FilePath.ToString()))
+            .ToArray();
     }
 
     private GitlabRepositoryFile? GetFile()
     {
-        return Context.GetGitlabObjects(f => new GitlabRepositoryFile(FilesRootPath, f),
-                "Get-GitlabRepositoryFile", WithOptionalRefParam("-Project", ProjectPath, "-FilePath", FilePath))
+        return Context.GetPSObjects("Get-GitlabRepositoryFile", WithOptionalRefParam("-Project", ProjectPath.ToString(), "-FilePath", FilePath.ToString()))
+            .Select(o => new GitlabRepositoryFile(o))
             .FirstOrDefault();
     }
 
-    private GitlabRepositoryTree? GetFileAsTree()
+    private GitlabRepositoryItem? GetFileAsTree()
     {
-        return Context.GetGitlabObjects(f => GitlabRepositoryTree.FromGitlabFile(FilesRootPath, f),
-                "Get-GitlabRepositoryFile", WithOptionalRefParam("-Project", ProjectPath, "-FilePath", FilePath))
+        return Context.GetItems(f => GitlabRepositoryItem.FromFile(FilesRootPath, f),
+                "Get-GitlabRepositoryFile", WithOptionalRefParam("-Project", ProjectPath.ToString(), "-FilePath", FilePath.ToString()))
             .FirstOrDefault();
     }
 
     private bool BranchesPathExists()
     {
-        return new BranchPathHandler($"{ProjectPath}/branches/{_branchesPathMatch.Groups["BranchName"].Value}", Context)
+        return new BranchPathHandler(ProjectPath.Combine("branches", CurrentBranch.Value), Context)
             .Exists();
     }
 
     private string[] WithOptionalRefParam(params string[] args)
     {
-        if (_branchesPathMatch.Success)
+        if (!CurrentBranch.IsDefault)
         {
-            return args.Concat(new[] { "-Ref", _branchesPathMatch.Groups["BranchName"].Value }).ToArray();
+            return args.Concat(new[] { "-Ref", CurrentBranch.Value }).ToArray();
         }
 
         return args;

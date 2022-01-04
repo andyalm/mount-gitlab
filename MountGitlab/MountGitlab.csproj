@@ -4,9 +4,14 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <PublishDir>$(MSBuildProjectDirectory)\..\bin\MountGitlab\</PublishDir>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MountAnything" Version="0.2.0">
+      <IncludeAssets>all</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="System.Management.Automation" Version="7.2.0" />
   </ItemGroup>
   
@@ -18,10 +23,24 @@
   
   <Target Name="CopyModuleToOutput" AfterTargets="Build">
     <Exec Command="pwsh CreateManifest.ps1 $(OutputPath)" WorkingDirectory="$(MSBuildProjectDirectory)" />
-    <ItemGroup>
+    <!--ItemGroup>
       <ModuleFile Include="$(OutputPath)\*.*" />
     </ItemGroup>
-    <Copy SourceFiles="@(ModuleFile)" DestinationFolder="..\bin\MountGitlab" Condition="$(Configuration)=='Release'" />
+    <Copy SourceFiles="@(ModuleFile)" DestinationFolder="..\bin\MountGitlab" Condition="$(Configuration)=='Release'" /-->
+  </Target>
+
+  <Target Name="CopyModuleToPublishOutput" AfterTargets="Publish">
+    <ItemGroup>
+      <PublishCruft Include="$(PublishDir)\System.*" />
+      <PublishCruft Include="$(PublishDir)\Microsoft.*" />
+      <PublishCruft Include="$(PublishDir)\Newtonsoft.*" />
+    </ItemGroup>
+    <ItemGroup>
+      <ModuleFile Include="$(OutputPath)\MountGitlab.psd1" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ModuleFile)" DestinationFolder="$(PublishDir)" />
+    <Delete Files="@(PublishCruft)" />
+    <RemoveDir Directories="$(PublishDir)\runtimes" />
   </Target>
 
 </Project>

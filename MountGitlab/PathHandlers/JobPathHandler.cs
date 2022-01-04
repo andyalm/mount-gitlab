@@ -1,22 +1,17 @@
 ﻿using System.Management.Automation.Provider;
-using System.Text.RegularExpressions;
+using MountAnything;
+using MountAnything.Content;
 using MountGitlab.Models;
 
 namespace MountGitlab.PathHandlers;
 
-public class JobPathHandler : PathHandler, ISupportContentReader
+public class JobPathHandler : PathHandler, IContentReaderHandler
 {
-    private static readonly Regex _jobPathRegex = new(@"/pipelines/\d+/[^/]+$");
-    public static bool Matches(string path)
-    {
-        return _jobPathRegex.IsMatch(path);
-    }
-    
     private readonly PipelinePathHandler _pipelineHandler;
     
-    public JobPathHandler(string path, IPathHandlerContext context) : base(path, context)
+    public JobPathHandler(ItemPath path, IPathHandlerContext context, ProjectPath projectPath, CurrentBranch currentBranch) : base(path, context)
     {
-        _pipelineHandler = new PipelinePathHandler(ParentPath, Context);
+        _pipelineHandler = new PipelinePathHandler(ParentPath, Context, projectPath, currentBranch);
     }
 
     protected override bool ExistsImpl()
@@ -29,20 +24,18 @@ public class JobPathHandler : PathHandler, ISupportContentReader
         return GetItem() != null;
     }
 
-    protected override GitlabObject? GetItemImpl()
+    protected override IItem? GetItemImpl()
     {
         var args = new List<string>
         {
-            "-ProjectId", _pipelineHandler.ProjectPath
+            "-ProjectId", _pipelineHandler.ProjectPath.ToString()
         };
-        var itemPropertyName = "Name";
         if (long.TryParse(ItemName, out _))
         {
             args.AddRange(new[]
             {
                 "-JobId", ItemName
             });
-            itemPropertyName = "Id";
         }
         else
         {
@@ -52,14 +45,14 @@ public class JobPathHandler : PathHandler, ISupportContentReader
                 "-Name", ItemName
             });
         }
-        return Context.GetGitlabObjects(j => new GitlabJob(ParentPath, j, itemPropertyName),
-             job => job.JobName.Equals(ItemName, StringComparison.OrdinalIgnoreCase) || job.Id.ToString() == ItemName,    
+        return Context.GetItems(j => new GitlabJob(ParentPath, j),
+             job => job.ItemName.Equals(ItemName, StringComparison.OrdinalIgnoreCase) || job.Id.ToString() == ItemName,    
             "Get-GitlabJob", args.ToArray()).FirstOrDefault();
     }
 
-    protected override IEnumerable<GitlabObject> GetChildItemsImpl(bool recurse)
+    protected override IEnumerable<IItem> GetChildItemsImpl()
     {
-        return Enumerable.Empty<GitlabObject>();
+        return Enumerable.Empty<IItem>();
     }
 
     public IContentReader GetContentReader()

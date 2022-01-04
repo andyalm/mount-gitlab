@@ -1,42 +1,31 @@
-﻿using System.Text.RegularExpressions;
+﻿using MountAnything;
 using MountGitlab.Models;
 
 namespace MountGitlab.PathHandlers;
 
 public class MergeRequestPathHandler : PathHandler
 {
-    public MergeRequestPathHandler(string path, IPathHandlerContext context) : base(path, context)
+    public MergeRequestPathHandler(ItemPath path, IPathHandlerContext context, ProjectPath projectPath) : base(path, context)
     {
+        ProjectPath = projectPath;
     }
 
-    public string ProjectPath => GitlabPath.GetParent(ParentPath);
+    public ProjectPath ProjectPath { get; }
 
-    protected override bool ExistsImpl()
-    {
-        return GetItem() != null;
-    }
-
-    protected override GitlabObject? GetItemImpl()
+    protected override IItem? GetItemImpl()
     {
         return GetMergeRequest();
     }
 
-    protected override IEnumerable<GitlabObject> GetChildItemsImpl(bool recurse)
+    protected override IEnumerable<IItem> GetChildItemsImpl()
     {
-        return Enumerable.Empty<GitlabObject>();
+        return Enumerable.Empty<IItem>();
     }
 
     public GitlabMergeRequest? GetMergeRequest()
     {
-        return Context.GetGitlabObjects(b => new GitlabMergeRequest(b),
-            "Get-GitlabMergeRequest", "-Project", ProjectPath, "-MergeRequestId", ItemName)
+        return Context.GetItems(b => new GitlabMergeRequest(ParentPath, b),
+            "Get-GitlabMergeRequest", "-Project", ProjectPath.ToString(), "-MergeRequestId", ItemName)
             .FirstOrDefault();
-    }
-
-    private static readonly Regex PathRegex = new(@"^(?<ProjectPath>.+)/merge-requests/(?<MergeRequestId>\d+)$");
-    
-    public static bool Matches(string path)
-    {
-        return PathRegex.IsMatch(path);
     }
 }

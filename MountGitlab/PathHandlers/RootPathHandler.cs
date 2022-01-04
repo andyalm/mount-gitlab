@@ -1,19 +1,18 @@
-﻿using MountGitlab.Models;
+﻿using MountAnything;
+using MountGitlab.Models;
 
 namespace MountGitlab.PathHandlers;
 
 public class RootPathHandler : PathHandler
 {
-    public RootPathHandler(string path, IPathHandlerContext context) : base(path, context) {}
+    public RootPathHandler(ItemPath path, IPathHandlerContext context) : base(path, context) {}
 
-    protected override bool ExistsImpl() => true;
-
-    protected override GitlabObject GetItemImpl()
+    protected override IItem GetItemImpl()
     {
         return new GitlabRoot();
     }
 
-    protected override IEnumerable<GitlabObject> GetChildItemsImpl(bool recurse)
+    protected override IEnumerable<IItem> GetChildItemsImpl()
     {
         return Context.GetGroups();
     }

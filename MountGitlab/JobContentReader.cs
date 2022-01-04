@@ -1,9 +1,11 @@
 ﻿using System.Text;
+using MountAnything;
+using MountAnything.Content;
 using MountGitlab.Models;
 
 namespace MountGitlab;
 
-public class JobContentReader : MemoryStreamContentReader
+public class JobContentReader : StreamContentReader
 {
     private readonly GitlabJob _job;
     private readonly IPathHandlerContext _context;
