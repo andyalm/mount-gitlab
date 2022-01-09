@@ -7,28 +7,22 @@ namespace MountGitlab.PathHandlers;
 
 public class JobPathHandler : PathHandler, IContentReaderHandler
 {
-    private readonly PipelinePathHandler _pipelineHandler;
+    public IItemAncestor<GitlabPipeline> Pipeline { get; }
+    private ProjectPath ProjectPath { get; }
+    private CurrentBranch CurrentBranch { get; }
     
-    public JobPathHandler(ItemPath path, IPathHandlerContext context, ProjectPath projectPath, CurrentBranch currentBranch) : base(path, context)
+    public JobPathHandler(ItemPath path, IPathHandlerContext context, ProjectPath projectPath, CurrentBranch currentBranch, IItemAncestor<GitlabPipeline> pipeline) : base(path, context)
     {
-        _pipelineHandler = new PipelinePathHandler(ParentPath, Context, projectPath, currentBranch);
-    }
-
-    protected override bool ExistsImpl()
-    {
-        if (!_pipelineHandler.Exists())
-        {
-            return false;
-        }
-
-        return GetItem() != null;
+        Pipeline = pipeline;
+        ProjectPath = projectPath;
+        CurrentBranch = currentBranch;
     }
 
     protected override IItem? GetItemImpl()
     {
         var args = new List<string>
         {
-            "-ProjectId", _pipelineHandler.ProjectPath.ToString()
+            "-ProjectId", ProjectPath.ToString()
         };
         if (long.TryParse(ItemName, out _))
         {
@@ -41,7 +35,7 @@ public class JobPathHandler : PathHandler, IContentReaderHandler
         {
             args.AddRange(new []
             {
-                "-PipelineId", _pipelineHandler.PipelineId,
+                "-PipelineId", Pipeline.Item.ItemName,
                 "-Name", ItemName
             });
         }
