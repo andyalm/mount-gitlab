@@ -35,7 +35,7 @@ public class JobPathHandler : PathHandler, IContentReaderHandler
         {
             args.AddRange(new []
             {
-                "-PipelineId", Pipeline.Item.ItemName,
+                "-PipelineId", $"\"{Pipeline.Item.ItemName}\"",
                 "-Name", ItemName
             });
         }
