@@ -11,7 +11,7 @@ public class GitlabJob : Item
 
     public override string ItemName => Property<string>("Name")!;
 
-    protected override IEnumerable<string> Aliases
+    public override IEnumerable<string> Aliases
     {
         get
         {
