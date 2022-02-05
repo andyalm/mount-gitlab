@@ -9,6 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="GraphQL.Client" Version="4.0.2" />
+    <PackageReference Include="GraphQL.Client.Serializer.SystemTextJson" Version="4.0.2" />
     <PackageReference Include="MountAnything" Version="0.4.0" />
     <PackageReference Include="System.Management.Automation" Version="7.2.0" />
   </ItemGroup>

@@ -110,5 +110,36 @@
         </TableRowEntries>
       </TableControl>
     </View>
+    <View>
+      <Name>MountGitlabPipelineItem</Name>
+      <ViewSelectedBy>
+        <TypeName>MountGitlab.Pipelines.PipelineItem</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+          </TableColumnHeader>
+          <TableColumnHeader>
+          </TableColumnHeader>
+          <TableColumnHeader>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>PipelineId</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Ref</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Status</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
   </ViewDefinitions>
 </Configuration>

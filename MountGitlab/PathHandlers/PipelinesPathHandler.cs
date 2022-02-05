@@ -1,5 +1,9 @@
-﻿using MountAnything;
+﻿using System.Text.Json;
+using GraphQL;
+using MountAnything;
+using MountGitlab.GitlabApi;
 using MountGitlab.Models;
+using MountGitlab.Pipelines;
 
 namespace MountGitlab.PathHandlers;
 
@@ -30,12 +34,40 @@ public class PipelinesPathHandler : PathHandler
 
     protected override IEnumerable<IItem> GetChildItemsImpl()
     {
-        var args = new List<string> { "-Project", ProjectPath.ToString() };
-        if (!CurrentBranch.IsDefault)
+        var request = new GraphQLRequest
         {
-            args.Add("-Ref");
-            args.Add(CurrentBranch.Value);
-        }
-        return Context.GetItems(b => new GitlabPipeline(Path, b), "Get-GitlabPipeline", args.ToArray());
+            Query =
+                @"query($projectPath: ID!, $commitRef: String) {
+                    project(fullPath: $projectPath) {
+                        pipelines(ref: $commitRef) {
+                            nodes {
+                                id
+                                ref
+                                status
+                                user {
+                                  username
+                                  name
+                                }
+                                active
+                                startedAt
+                                createdAt
+                                finishedAt
+                                path
+                                sha
+                                usesNeeds
+                                warnings
+                            }
+                        }
+                    }
+                }",
+            Variables = new
+            {
+                projectPath = ProjectPath.ToString(),
+                commitRef = CurrentBranch.IsDefault ? null : CurrentBranch.Value
+            }
+        };
+        var response = Context.GraphQLQuery<Response>(request);
+
+        return response.Project!.Pipelines!.Nodes!.Select(n => new PipelineItem(Path, n));
     }
 }
