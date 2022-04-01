@@ -17,6 +17,9 @@
     <Content Include="*.ps1xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="*.psm1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   
   <Target Name="CopyModuleToOutput" AfterTargets="Build">

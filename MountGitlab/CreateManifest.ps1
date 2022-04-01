@@ -14,6 +14,7 @@ Write-Host "Module version: $ModuleVersion"
 
 New-ModuleManifest -Path $(Join-Path $Directory MountGitlab.psd1) `
     -RootModule 'MountGitlab.dll' `
+    -NestedModules @('Commands.psm1') `
     -ModuleVersion $ModuleVersion `
     -Guid '5e4bb943-62b6-4cde-9bf7-45fea047ce11' `
     -Author 'Andy Alm' `
@@ -22,7 +23,7 @@ New-ModuleManifest -Path $(Join-Path $Directory MountGitlab.psd1) `
     -PowerShellVersion '7.2' `
     -FormatsToProcess @('Formats.ps1xml') `
     -RequiredModules @('GitlabCli') `
-    -FunctionsToExport @() `
+    -FunctionsToExport @('Enter-MountGitlab', 'Exit-MountGitlab') `
     -VariablesToExport @() `
     -CmdletsToExport @() `
     -AliasesToExport @() `
