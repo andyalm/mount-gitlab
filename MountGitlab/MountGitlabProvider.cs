@@ -1,25 +1,20 @@
-﻿using System.Collections.ObjectModel;
-using System.Management.Automation;
-using System.Management.Automation.Provider;
-using Autofac;
+﻿using Autofac;
 using MountAnything;
 using MountAnything.Routing;
 using MountGitlab.PathHandlers;
 
 namespace MountGitlab;
-[CmdletProvider("MountGitlab", ProviderCapabilities.ExpandWildcards | ProviderCapabilities.Filter)]
-public class MountGitlabProvider : MountAnythingProvider
+public class MountGitlabProvider : IMountAnythingProvider
 {
-    protected override Collection<PSDriveInfo> InitializeDefaultDrives()
+    public IEnumerable<DefaultDrive> GetDefaultDrives()
     {
-        return new Collection<PSDriveInfo>
+        yield return new DefaultDrive("gitlab")
         {
-            new PSDriveInfo("gitlab", this.ProviderInfo, this.ItemSeparator.ToString(),
-                "Allows you to navigate gitlab via your GitlabCli configuration", null)
+            Description = "Allows you to navigate gitlab via your GitlabCli configuration"
         };
     }
     
-    protected override Router CreateRouter()
+    public Router CreateRouter()
     {
         var router = Router.Create<RootPathHandler>();
         
