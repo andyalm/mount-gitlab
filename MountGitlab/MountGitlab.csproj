@@ -5,11 +5,24 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PublishDir>$(MSBuildProjectDirectory)\..\bin\MountGitlab\</PublishDir>
+    <PackageReleaseNotes>$(GithubReleaseNotes)</PackageReleaseNotes>
+    <PackageVersion Condition="$(GithubReleaseTag)!=''">$(GithubReleaseTag)</PackageVersion>
+    <PackageVersion Condition="$(PackageVersion)==''">0.0.1</PackageVersion>
+    <ProjectGuid>5e4bb943-62b6-4cde-9bf7-45fea047ce11</ProjectGuid>
+    <Authors>Andy Alm</Authors>
+    <Copyright>(c) 2021 Andy Alm. All rights reserved.</Copyright>
+    <Description>An experimental powershell provider that allows you to explore gitlab as a filesystem.</Description>
+    <RequiredModules>GitlabCli</RequiredModules>
+    <FunctionsToExport>
+      Enter-MountGitlab;
+      Exit-MountGitlab;
+    </FunctionsToExport>
+    <PackageLicenseUrl>https://github.com/andyalm/mount-gitlab/blob/main/LICENSE</PackageLicenseUrl>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MountAnything" Version="0.5.2" />
-    <PackageReference Include="MountAnything.Hosting.Build" Version="0.5.2">
+    <PackageReference Include="MountAnything" Version="0.5.3" />
+    <PackageReference Include="MountAnything.Hosting.Build" Version="0.5.3">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.Management.Automation" Version="7.2.0" />
