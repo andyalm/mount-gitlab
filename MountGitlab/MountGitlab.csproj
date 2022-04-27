@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <PublishDir>$(MSBuildProjectDirectory)\..\bin\MountGitlab\</PublishDir>
     <PackageReleaseNotes>$(GithubReleaseNotes)</PackageReleaseNotes>
-    <PackageVersion Condition="$(GithubReleaseTag)!=''">$(GithubReleaseTag)</PackageVersion>
+    <PackageVersion Condition="$(GithubReleaseTag)!=''">$(GithubReleaseTag.Substring(1))</PackageVersion>
     <PackageVersion Condition="$(PackageVersion)==''">0.0.1</PackageVersion>
     <ProjectGuid>5e4bb943-62b6-4cde-9bf7-45fea047ce11</ProjectGuid>
     <Authors>Andy Alm</Authors>
