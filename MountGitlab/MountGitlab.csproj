@@ -4,40 +4,33 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <PublishDir>$(MSBuildProjectDirectory)\..\bin\MountGitlab\</PublishDir>
+    <PackageReleaseNotes>$(GithubReleaseNotes)</PackageReleaseNotes>
+    <PackageVersion Condition="$(GithubReleaseTag)!=''">$(GithubReleaseTag.Substring(1))</PackageVersion>
+    <PackageVersion Condition="$(PackageVersion)==''">0.0.1</PackageVersion>
+    <ProjectGuid>5e4bb943-62b6-4cde-9bf7-45fea047ce11</ProjectGuid>
+    <Authors>Andy Alm</Authors>
+    <Copyright>(c) 2021 Andy Alm. All rights reserved.</Copyright>
+    <Description>An experimental powershell provider that allows you to explore gitlab as a filesystem.</Description>
+    <RequiredModules>GitlabCli</RequiredModules>
+    <FunctionsToExport>
+      Enter-MountGitlab;
+      Exit-MountGitlab;
+    </FunctionsToExport>
+    <PackageLicenseUrl>https://github.com/andyalm/mount-gitlab/blob/main/LICENSE</PackageLicenseUrl>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MountAnything" Version="0.4.0" />
+    <PackageReference Include="MountAnything" Version="0.5.3" />
+    <PackageReference Include="MountAnything.Hosting.Build" Version="0.5.3">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="System.Management.Automation" Version="7.2.0" />
   </ItemGroup>
   
   <ItemGroup>
-    <Content Include="*.ps1xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="*.psm1">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <PSFormat Include="Formats.ps1xml" />
+    <NestedModule Include="Commands.psm1" />
   </ItemGroup>
-  
-  <Target Name="CopyModuleToOutput" AfterTargets="Build">
-    <Exec Command="pwsh CreateManifest.ps1 $(OutputPath)" WorkingDirectory="$(MSBuildProjectDirectory)" />
-  </Target>
-
-  <Target Name="CopyModuleToPublishOutput" AfterTargets="Publish">
-    <ItemGroup>
-      <PublishCruft Include="$(PublishDir)\System.*" />
-      <PublishCruft Include="$(PublishDir)\Microsoft.*" />
-      <PublishCruft Include="$(PublishDir)\Newtonsoft.*" />
-    </ItemGroup>
-    <ItemGroup>
-      <ModuleFile Include="$(OutputPath)\MountGitlab.psd1" />
-    </ItemGroup>
-    <Copy SourceFiles="@(ModuleFile)" DestinationFolder="$(PublishDir)" />
-    <Delete Files="@(PublishCruft)" />
-    <RemoveDir Directories="$(PublishDir)\runtimes" />
-  </Target>
 
 </Project>
